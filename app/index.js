@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import ThemedScreen from '@/themes/themedComponents/ThemedScreen';
 import Footer from '@/components/Footer';
 import HomeScreenHeader from '@/components/homeScreen/HomeScreenHeader';
@@ -22,7 +22,17 @@ export default function HomeScreen() {
               Welcome to your Go Problems training app!
             </Text>
             <Link href='/problems' asChild>
-              <Button title='Problems' style={{ width: 200 }} />
+              <TouchableOpacity
+                style={{
+                  width: 200,
+                  alignItems: 'center',
+                  padding: 10,
+                  backgroundColor: '#007bff',
+                  borderRadius: 5
+                }}
+              >
+                <Text style={{ color: '#fff', fontSize: 16 }}>Problems</Text>
+              </TouchableOpacity>
             </Link>
           </View>
           <Footer />
@@ -34,7 +44,8 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   scrollContent: {
-    padding: 10
+    padding: 10,
+    flex: 1
   },
   container: {
     flex: 1,
