@@ -255,7 +255,7 @@ export const BoardRenderer: React.FC<BoardRendererProps> = ({
       <Circle
         cx={cx}
         cy={cy}
-        r={spacing * 0.4}
+        r={spacing * 0.47}
         fill={currentPlayer === 1 ? 'black' : 'white'}
         opacity={isValidMove ? 0.5 : 0}
         stroke={isValidMove ? (currentPlayer === 1 ? 'black' : 'gray') : 'red'}
@@ -270,8 +270,7 @@ export const BoardRenderer: React.FC<BoardRendererProps> = ({
         styles.container,
         {
           width: actualBoardSize,
-          height: actualBoardSize,
-          opacity: isTouching ? 0.95 : 1
+          height: actualBoardSize
         }
       ]}
     >

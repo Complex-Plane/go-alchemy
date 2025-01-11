@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, useWindowDimensions } from 'react-native';
 import { BoardRenderer } from '@/components/BoardRenderer';
-import { BoardStateManager } from '@/utils/boardState';
+import { BoardStateManager } from '@/classes/BoardStateManager';
 // import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Stone } from '@/types/board';
 import ErrorBoundary from 'react-native-error-boundary';
