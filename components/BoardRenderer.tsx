@@ -1,103 +1,41 @@
 import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { View, StyleSheet, useWindowDimensions } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import Svg, { Line, Circle, G } from 'react-native-svg';
-import { BoardState, BoardRange, Stone, Coordinate } from '@/types/board';
-import * as Haptics from 'expo-haptics';
-import { RootState } from '@/store/store';
+import { BoardRange, Coordinate } from '@/types/board';
+import { useBoardDimensions } from '@/hooks/useBoardDimensions';
+import { useGame } from '@/contexts/GameContext';
+import { useBoardInput } from '@/hooks/useBoardInput';
 
 interface BoardRendererProps {
-  boardState: BoardState;
   size: number;
   range?: BoardRange;
-  currentPlayer: Stone;
-  onPlaceStone?: (x: number, y: number) => void;
 }
 
 export const BoardRenderer: React.FC<BoardRendererProps> = ({
-  boardState,
-  size = 19,
-  range,
-  currentPlayer = 1,
-  onPlaceStone
+  size,
+  range
 }) => {
+  const { boardState, currentPlayer, isValidMove } = useGame();
+  const { handleMove } = useBoardInput();
   const [hoveredIntersection, setHoveredIntersection] =
     useState<Coordinate | null>(null);
-  const [isValidMove, setIsValidMove] = useState<boolean>(false);
-  const [isTouching, setIsTouching] = useState(false);
-  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
-  const hapticsEnabled = useSelector(
-    (state: RootState) => state.settings.hapticsEnabled
-  );
+  const {
+    spacing,
+    actualBoardSize,
+    transformCoordinates,
+    getNearestIntersection,
+    visibleRange
+  } = useBoardDimensions(size, range);
 
-  // Add padding to accommodate full stones at edges
-  const STONE_PADDING = 0.5; // Half a spacing unit for padding
-  const LINE_EXTENSION = 0.5; // How far lines extend beyond the last intersection
-
-  // Calculate visible range
-  const startX = range?.startX ?? 0;
-  const startY = range?.startY ?? 0;
-  const endX = range?.endX ?? size - 1;
-  const endY = range?.endY ?? size - 1;
-  const visibleWidth = endX - startX + 1;
-  const visibleHeight = endY - startY + 1;
-
-  // Calculate board size and spacing including padding
-  const availableSize = Math.min(screenWidth, screenHeight) - 40;
-  const totalVisibleWidth = visibleWidth + 2 * STONE_PADDING;
-  const totalVisibleHeight = visibleHeight + 2 * STONE_PADDING;
-
-  const spacingX = availableSize / (totalVisibleWidth - 1);
-  const spacingY = availableSize / (totalVisibleHeight - 1);
-  const spacing = Math.min(spacingX, spacingY);
-
-  // Calculate the actual board size including padding
-  const actualBoardSize =
-    spacing * Math.max(totalVisibleWidth, totalVisibleHeight);
-
-  // Transform coordinates from board space to screen space
-  const transformCoordinates = (x: number, y: number): [number, number] => {
-    return [
-      (x - startX + STONE_PADDING) * spacing,
-      (y - startY + STONE_PADDING) * spacing
-    ];
-  };
-
-  // Transform from screen space to board space
-  const inverseTransformCoordinates = (
-    x: number,
-    y: number
-  ): [number, number] => {
-    return [
-      Math.round(x / spacing - STONE_PADDING) + startX,
-      Math.round(y / spacing - STONE_PADDING) + startY
-    ];
-  };
-
-  const getNearestIntersection = (
-    touchX: number,
-    touchY: number
-  ): Coordinate => {
-    const [x, y] = inverseTransformCoordinates(touchX, touchY);
-    return {
-      x: Math.max(startX, Math.min(endX, x)),
-      y: Math.max(startY, Math.min(endY, y))
-    };
-  };
-
-  const isValidIntersection = (x: number, y: number): boolean => {
-    return boardState[y * size + x] === 0;
-  };
+  const { startX, startY, endX, endY } = visibleRange;
 
   const handleIntersectionHover = (x: number, y: number) => {
     const intersection = getNearestIntersection(x, y);
     setHoveredIntersection(intersection);
-    setIsValidMove(isValidIntersection(intersection.x, intersection.y));
   };
 
   const handleTouchStart = (event: any) => {
-    setIsTouching(true);
     const touch = event.nativeEvent;
     handleIntersectionHover(touch.locationX, touch.locationY);
   };
@@ -108,21 +46,13 @@ export const BoardRenderer: React.FC<BoardRendererProps> = ({
   };
 
   const handleTouchEnd = async () => {
-    if (hoveredIntersection && isValidMove && onPlaceStone) {
-      try {
-        // Provide haptic feedback
-        if (hapticsEnabled)
-          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      } catch (error) {
-        // Fail silently if haptics aren't available
-        console.warn('Haptics not available:', error);
-      } finally {
-        onPlaceStone(hoveredIntersection.x, hoveredIntersection.y);
-      }
+    if (hoveredIntersection) {
+      await handleMove(hoveredIntersection);
+      setHoveredIntersection(null);
     }
-    setIsTouching(false);
-    setHoveredIntersection(null);
   };
+
+  const LINE_EXTENSION = 0.5;
 
   const renderGrid = () => {
     const lines = [];
@@ -219,7 +149,7 @@ export const BoardRenderer: React.FC<BoardRendererProps> = ({
 
     const { x, y } = hoveredIntersection;
     const [hx, hy] = transformCoordinates(x, y);
-    const color = isValidMove ? '#00ff00' : '#ff0000';
+    const color = isValidMove(x, y) ? '#00ff00' : '#ff0000';
 
     return (
       <G>
@@ -257,8 +187,10 @@ export const BoardRenderer: React.FC<BoardRendererProps> = ({
         cy={cy}
         r={spacing * 0.47}
         fill={currentPlayer === 1 ? 'black' : 'white'}
-        opacity={isValidMove ? 0.5 : 0}
-        stroke={isValidMove ? (currentPlayer === 1 ? 'black' : 'gray') : 'red'}
+        opacity={isValidMove(x, y) ? 0.5 : 0}
+        stroke={
+          isValidMove(x, y) ? (currentPlayer === 1 ? 'black' : 'gray') : 'red'
+        }
         strokeWidth={1}
       />
     );
@@ -268,10 +200,7 @@ export const BoardRenderer: React.FC<BoardRendererProps> = ({
     <View
       style={[
         styles.container,
-        {
-          width: actualBoardSize,
-          height: actualBoardSize
-        }
+        { width: actualBoardSize, height: actualBoardSize }
       ]}
     >
       <Svg
