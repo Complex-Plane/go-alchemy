@@ -15,7 +15,7 @@ export const BoardRenderer: React.FC<BoardRendererProps> = ({
   size,
   range
 }) => {
-  const { boardState, currentPlayer, isValidMove } = useGame();
+  const { board, currentPlayer, isValidMove } = useGame();
   const { handleMove } = useBoardInput();
   const [hoveredIntersection, setHoveredIntersection] =
     useState<Coordinate | null>(null);
@@ -104,7 +104,7 @@ export const BoardRenderer: React.FC<BoardRendererProps> = ({
 
     for (let y = startY; y <= endY; y++) {
       for (let x = startX; x <= endX; x++) {
-        const stone = boardState[y * size + x];
+        const stone = board.get([x, y]);
         if (stone !== 0) {
           const [cx, cy] = transformCoordinates(x, y);
           stones.push(
@@ -115,7 +115,7 @@ export const BoardRenderer: React.FC<BoardRendererProps> = ({
               r={spacing * 0.47}
               fill={stone === 1 ? 'black' : 'white'}
               stroke='black'
-              strokeWidth={stone === 2 ? 1 : 0}
+              strokeWidth={stone === -1 ? 1 : 0}
             />
           );
         }
@@ -149,7 +149,7 @@ export const BoardRenderer: React.FC<BoardRendererProps> = ({
 
     const { x, y } = hoveredIntersection;
     const [hx, hy] = transformCoordinates(x, y);
-    const color = isValidMove(x, y) ? '#00ff00' : '#ff0000';
+    const color = isValidMove([x, y]) ? '#00ff00' : '#ff0000';
 
     return (
       <G>
@@ -187,9 +187,9 @@ export const BoardRenderer: React.FC<BoardRendererProps> = ({
         cy={cy}
         r={spacing * 0.47}
         fill={currentPlayer === 1 ? 'black' : 'white'}
-        opacity={isValidMove(x, y) ? 0.5 : 0}
+        opacity={isValidMove([x, y]) ? 0.5 : 0}
         stroke={
-          isValidMove(x, y) ? (currentPlayer === 1 ? 'black' : 'gray') : 'red'
+          isValidMove([x, y]) ? (currentPlayer === 1 ? 'black' : 'gray') : 'red'
         }
         strokeWidth={1}
       />

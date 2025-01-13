@@ -1,12 +1,18 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { BoardState, Stone } from '@/types/board';
+import Board from '@sabaki/go-board';
+import { Vertex, Sign } from '@sabaki/go-board';
+
+// Types that match @sabaki/go-board
+type BoardState = Sign[][];
+type StoneColor = Sign; // -1 for white, 1 for black, 0 for empty
 
 interface GameContextType {
+  board: Board;
   boardState: BoardState;
-  currentPlayer: Stone;
+  currentPlayer: StoneColor;
   boardSize: number;
-  placeStone: (x: number, y: number) => boolean;
-  isValidMove: (x: number, y: number) => boolean;
+  placeStone: (vertex: Vertex) => boolean;
+  isValidMove: (vertex: Vertex) => boolean;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -23,40 +29,44 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
   children
 }) => {
   const boardSize = 19;
-  const [boardState, setBoardState] = useState<BoardState>(
-    new Array(boardSize * boardSize).fill(0)
-  );
-  const [currentPlayer, setCurrentPlayer] = useState<Stone>(1);
+  const [board, setBoard] = useState(() => Board.fromDimensions(boardSize));
+  const [currentPlayer, setCurrentPlayer] = useState<StoneColor>(1); // Black starts
 
-  const getIndex = useCallback(
-    (x: number, y: number) => y * boardSize + x,
-    [boardSize]
-  );
+  // Get the current board state in the format @sabaki/go-board uses
+  const getBoardState = useCallback((): BoardState => {
+    return board.signMap;
+  }, [board]);
 
+  // Check if a move is valid
   const isValidMove = useCallback(
-    (x: number, y: number): boolean => {
-      return boardState[getIndex(x, y)] === 0;
+    (vertex: Vertex): boolean => {
+      return !board.analyzeMove(currentPlayer, vertex).pass;
     },
-    [boardState, getIndex]
+    [board]
   );
 
-  const placeStone = (x: number, y: number): boolean => {
-    if (isValidMove(x, y)) {
-      setBoardState((prevState) => {
-        const newState = [...prevState];
-        newState[getIndex(x, y)] = currentPlayer;
-        return newState;
-      });
-      setCurrentPlayer((prev) => (prev === 1 ? 2 : 1));
+  // Place a stone and handle captures
+  const placeStone = useCallback(
+    (vertex: Vertex): boolean => {
+      // Try to make the move
+      const newBoard = board.makeMove(currentPlayer, vertex);
+
+      // If the move was invalid, newBoard will be null
+      if (newBoard === null) return false;
+
+      // Update the board and switch players
+      setBoard(newBoard);
+      setCurrentPlayer((prev) => (prev === 1 ? -1 : 1));
       return true;
-    }
-    return false;
-  };
+    },
+    [board, currentPlayer]
+  );
 
   return (
     <GameContext.Provider
       value={{
-        boardState,
+        board,
+        boardState: getBoardState(),
         currentPlayer,
         boardSize,
         placeStone,
@@ -67,3 +77,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
     </GameContext.Provider>
   );
 };
+
+// Additional type exports for compatibility
+export type { Vertex, Sign };
+export type { Board };

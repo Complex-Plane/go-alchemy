@@ -12,7 +12,7 @@ export function useBoardInput() {
 
   const handleMove = async (point: Coordinate): Promise<boolean> => {
     const { x, y } = point;
-    if (isValidMove(x, y)) {
+    if (isValidMove([x, y])) {
       try {
         if (hapticsEnabled) {
           await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -20,7 +20,7 @@ export function useBoardInput() {
       } catch (error) {
         console.warn('Haptics not available:', error);
       }
-      return placeStone(x, y);
+      return placeStone([x, y]);
     }
     return false;
   };
