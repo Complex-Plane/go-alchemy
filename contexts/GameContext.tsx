@@ -1,6 +1,14 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect
+} from 'react';
 import Board from '@sabaki/go-board';
 import { Vertex, Sign } from '@sabaki/go-board';
+import { useGameTree } from '@/hooks/useGameTree';
+import { loadCategoryIndex, loadSgfFromAssets } from '@/utils/sgfLoader';
 
 // Types that match @sabaki/go-board
 type BoardState = Sign[][];
@@ -32,6 +40,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
   const [board, setBoard] = useState(() => Board.fromDimensions(boardSize));
   const [currentPlayer, setCurrentPlayer] = useState<StoneColor>(1); // Black starts
 
+  const { gameTree, currentNode, load, addMove, navigate, canNavigate } =
+    useGameTree();
+
   // Get the current board state in the format @sabaki/go-board uses
   const getBoardState = useCallback((): BoardState => {
     return board.signMap;
@@ -55,6 +66,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
       if (newBoard === null) return false;
 
       // Update the board and switch players
+      addMove(vertex);
       setBoard(newBoard);
       setCurrentPlayer((prev) => (prev === 1 ? -1 : 1));
       return true;

@@ -7,13 +7,18 @@ interface ControlPanelProps {
   onNext?: () => void;
   onFirst?: () => void;
   onLast?: () => void;
+  canNavigate?: {
+    forward: boolean;
+    backward: boolean;
+  };
 }
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({
   onPrevious,
   onNext,
   onFirst,
-  onLast
+  onLast,
+  canNavigate
 }) => {
   return (
     <View style={styles.container}>
@@ -26,11 +31,13 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         <Button
           icon={{ name: 'chevron-left', color: 'white' }}
           onPress={onPrevious}
+          disabled={!canNavigate?.backward}
           type='clear'
         />
         <Button
           icon={{ name: 'chevron-right', color: 'white' }}
           onPress={onNext}
+          disabled={!canNavigate?.forward}
           type='clear'
         />
         <Button
