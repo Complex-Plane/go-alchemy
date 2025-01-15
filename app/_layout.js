@@ -6,29 +6,8 @@ import Loading from '@/components/Loading';
 import ThemeWrapper from '@/themes/ThemeWrapper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Icon } from '@rneui/themed';
-import { useEffect, useState } from 'react';
-import { copyAssetsToFs } from '@/utils/sgfLoader';
 
 export default function RootLayout() {
-  // const [isReady, setIsReady] = useState(false);
-
-  // useEffect(() => {
-  //   async function prepare() {
-  //     try {
-  //       await copyAssetsToFs();
-  //       setIsReady(true);
-  //     } catch (error) {
-  //       console.error('Error preparing app:', error);
-  //     }
-  //   }
-
-  //   prepare();
-  // }, []);
-
-  // if (!isReady) {
-  //   return <Loading />;
-  // }
-
   return (
     <Provider store={store}>
       <PersistGate loading={<Loading />} persistor={persistor}>

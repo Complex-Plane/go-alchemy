@@ -1,9 +1,7 @@
 import { getId } from '@/utils/getId';
-import { parseSGF } from '@/utils/sgfParser';
 import { useState, useCallback } from 'react';
 const GameTree = require('@sabaki/immutable-gametree');
 const sgf = require('@sabaki/sgf');
-// import { parse } from '@sabaki/sgf/src/main';
 
 interface GameTreeHook {
   gameTree: typeof GameTree | null;
@@ -41,40 +39,6 @@ export function useGameTree(): GameTreeHook {
       console.error('Error parsing SGF:', error);
     }
   }, []);
-  // const load = useCallback((sgfString: string) => {
-  //   try {
-  //     const rootNodes = parseSGF(sgfString);
-  //     let tree = new GameTree({ getId });
-  //     tree.root.data = rootNodes[0].data;
-
-  //     console.log(`Root Nodes: ${JSON.stringify(rootNodes[0])}`);
-  //     console.log(`Tree: ${JSON.stringify(tree)}`);
-
-  //     // Recursively add children
-  //     function addChildren(parentNode: typeof GameTree.Node, sgfNode: any) {
-  //       if (!sgfNode.children) return;
-
-  //       for (const childSgfNode of sgfNode.children) {
-  //         // const childNode = tree.appendNode(parentNode, childSgfNode.data);
-  //         let childNode;
-  //         tree = tree.mutate((draft: typeof GameTree) => {
-  //           childNode = draft.appendNode(parentNode, childSgfNode.data);
-  //         });
-
-  //         addChildren(childNode, childSgfNode);
-  //       }
-  //     }
-
-  //     addChildren(tree.root, rootNodes[0]);
-
-  //     console.log(`Tree after appending nodes: ${JSON.stringify(tree)}`);
-
-  //     setGameTree(tree);
-  //     setCurrentNode(tree.root);
-  //   } catch (error) {
-  //     console.error('Error parsing SGF:', error);
-  //   }
-  // }, []);
 
   // const addMove = useCallback(
   //   (vertex: [number, number]) => {
@@ -130,7 +94,6 @@ export function useGameTree(): GameTreeHook {
     }, [gameTree]),
 
     last: useCallback(() => {
-      // TODO: probably broken. No getChildren method
       if (!currentNode || !gameTree) return;
       let node = currentNode;
       while (gameTree.get(node.id).children.length > 0) {

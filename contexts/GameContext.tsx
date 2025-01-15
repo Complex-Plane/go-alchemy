@@ -1,14 +1,7 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  useEffect
-} from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import Board from '@sabaki/go-board';
 import { Vertex, Sign } from '@sabaki/go-board';
 import { useGameTree } from '@/hooks/useGameTree';
-import { loadCategoryIndex, loadSgfFromAssets } from '@/utils/sgfLoader';
 
 // Types that match @sabaki/go-board
 type BoardState = Sign[][];

@@ -10,7 +10,7 @@ import { ControlPanel } from '@/components/ControlPanel';
 import { GoBoard } from '@/components/GoBoard';
 import { GameProvider } from '@/contexts/GameContext';
 import { useGameTree } from '@/hooks/useGameTree';
-import { loadCategoryIndex, loadSgfFromAssets } from '@/utils/sgfLoader';
+import { loadSgfFromAssets } from '@/utils/sgfLoader';
 import { Text } from '@rneui/themed';
 import { useLocalSearchParams } from 'expo-router';
 
