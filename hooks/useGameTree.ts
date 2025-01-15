@@ -2,7 +2,7 @@ import { getId } from '@/utils/getId';
 import { parseSGF } from '@/utils/sgfParser';
 import { useState, useCallback } from 'react';
 const GameTree = require('@sabaki/immutable-gametree');
-// const sgf = require('@sabaki/sgf');
+const sgf = require('@sabaki/sgf');
 // import { parse } from '@sabaki/sgf/src/main';
 
 interface GameTreeHook {
@@ -28,46 +28,12 @@ export function useGameTree(): GameTreeHook {
     null
   );
 
-  // const load = useCallback((sgfString: string) => {
-  //   try {
-  //     // Consider moving sgf.parse(sgfString) to sgf-loader which would return rootNodes
-  //     const rootNodes = parseSGF(sgfString);
-  //     const tree = new GameTree({ getId: () => crypto.randomUUID() });
-  //     tree.root.data = rootNodes[0].data;
-
-  //     setGameTree(tree);
-  //     setCurrentNode(tree.root);
-  //   } catch (error) {
-  //     console.error('Error parsing SGF:', error);
-  //   }
-  // }, []);
   const load = useCallback((sgfString: string) => {
     try {
-      const rootNodes = parseSGF(sgfString);
-      let tree = new GameTree({ getId });
+      // Consider moving sgf.parse(sgfString) to sgf-loader which would return rootNodes
+      const rootNodes = sgf.parse(sgfString);
+      const tree = new GameTree({ getId });
       tree.root.data = rootNodes[0].data;
-
-      console.log(`Root Nodes: ${JSON.stringify(rootNodes[0])}`);
-      console.log(`Tree: ${JSON.stringify(tree)}`);
-
-      // Recursively add children
-      function addChildren(parentNode: typeof GameTree.Node, sgfNode: any) {
-        if (!sgfNode.children) return;
-
-        for (const childSgfNode of sgfNode.children) {
-          // const childNode = tree.appendNode(parentNode, childSgfNode.data);
-          let childNode;
-          tree = tree.mutate((draft: typeof GameTree) => {
-            childNode = draft.appendNode(parentNode, childSgfNode.data);
-          });
-
-          addChildren(childNode, childSgfNode);
-        }
-      }
-
-      addChildren(tree.root, rootNodes[0]);
-
-      console.log(`Tree after appending nodes: ${JSON.stringify(tree)}`);
 
       setGameTree(tree);
       setCurrentNode(tree.root);
@@ -75,6 +41,40 @@ export function useGameTree(): GameTreeHook {
       console.error('Error parsing SGF:', error);
     }
   }, []);
+  // const load = useCallback((sgfString: string) => {
+  //   try {
+  //     const rootNodes = parseSGF(sgfString);
+  //     let tree = new GameTree({ getId });
+  //     tree.root.data = rootNodes[0].data;
+
+  //     console.log(`Root Nodes: ${JSON.stringify(rootNodes[0])}`);
+  //     console.log(`Tree: ${JSON.stringify(tree)}`);
+
+  //     // Recursively add children
+  //     function addChildren(parentNode: typeof GameTree.Node, sgfNode: any) {
+  //       if (!sgfNode.children) return;
+
+  //       for (const childSgfNode of sgfNode.children) {
+  //         // const childNode = tree.appendNode(parentNode, childSgfNode.data);
+  //         let childNode;
+  //         tree = tree.mutate((draft: typeof GameTree) => {
+  //           childNode = draft.appendNode(parentNode, childSgfNode.data);
+  //         });
+
+  //         addChildren(childNode, childSgfNode);
+  //       }
+  //     }
+
+  //     addChildren(tree.root, rootNodes[0]);
+
+  //     console.log(`Tree after appending nodes: ${JSON.stringify(tree)}`);
+
+  //     setGameTree(tree);
+  //     setCurrentNode(tree.root);
+  //   } catch (error) {
+  //     console.error('Error parsing SGF:', error);
+  //   }
+  // }, []);
 
   // const addMove = useCallback(
   //   (vertex: [number, number]) => {
