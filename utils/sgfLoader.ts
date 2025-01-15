@@ -13,8 +13,6 @@ export async function loadSgfFromAssets(
       throw new Error(`File not found: ${category}/${filename}`);
     }
 
-    console.log(`uri: ${uri}`);
-
     const asset = Asset.fromModule(uri);
     await asset.downloadAsync();
 

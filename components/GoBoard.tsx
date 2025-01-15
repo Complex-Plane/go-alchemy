@@ -45,8 +45,8 @@ export const GoBoard: React.FC<GoBoardProps> = ({ size, range }) => {
   const handleTouchEnd = async () => {
     if (hoveredIntersection) {
       await handleMove(hoveredIntersection);
-      setHoveredIntersection(null);
     }
+    setHoveredIntersection(null);
   };
 
   const LINE_EXTENSION = 0.5;
