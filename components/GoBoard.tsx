@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { Profiler, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import Svg, { Line, Circle, G } from 'react-native-svg';
 import { BoardRange, Coordinate } from '@/types/board';
 import { useBoardDimensions } from '@/hooks/useBoardDimensions';
 import { useGame } from '@/contexts/GameContext';
 import { useBoardInput } from '@/hooks/useBoardInput';
+import { profilerRender } from '@/utils/profilerUtils';
 
 interface GoBoardProps {
   size: number;
@@ -194,6 +195,7 @@ export const GoBoard: React.FC<GoBoardProps> = ({ size, range }) => {
   };
 
   return (
+    // <Profiler id='GoBoard' onRender={profilerRender}>
     <View
       style={[
         styles.container,
@@ -214,6 +216,7 @@ export const GoBoard: React.FC<GoBoardProps> = ({ size, range }) => {
         {renderGhostStone()}
       </Svg>
     </View>
+    // </Profiler>
   );
 };
 

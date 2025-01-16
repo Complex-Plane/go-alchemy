@@ -6,6 +6,6 @@ export const debugLog = (
   data?: any
 ) => {
   if (DEBUG) {
-    console.log(`[${caller}] ${message}`, data);
+    console.log(`[${caller}] ${message}`, data ?? '');
   }
 };

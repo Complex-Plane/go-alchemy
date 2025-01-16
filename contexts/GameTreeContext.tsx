@@ -11,6 +11,10 @@ import { getId } from '@/utils/getId';
 import { loadSgfFromAssets } from '@/utils/sgfLoader';
 import { Sign, Vertex } from '@sabaki/go-board';
 import { debugLog } from '@/utils/debugLog';
+import { vertexToSgf } from '@/utils/sgfUtils';
+
+export type GameTreeType = typeof GameTree;
+export type GameTreeNode = typeof GameTree.Node;
 
 interface GameTreeProviderProps {
   children: React.ReactNode;
@@ -18,16 +22,46 @@ interface GameTreeProviderProps {
   id?: string | number;
 }
 
-const GameTreeContext = createContext<
-  ReturnType<typeof useGameTreeState> | undefined
->(undefined);
+type GameTreeContextType = {
+  isLoading: boolean;
+  gameTree: GameTreeType | null;
+  currentNode: GameTreeNode | null;
+  setCurrentNode: (node: GameTreeNode) => void;
+  startingNode: GameTreeNode | null;
+  setStartingNode: (node: GameTreeNode) => void;
+  currentComment: string | null;
+  addMove: (vertex: Vertex, currentPlayer: Sign) => void;
+  navigate: {
+    forward: () => void;
+    backward: () => void;
+    first: () => void;
+    last: () => void;
+  };
+  canNavigate: {
+    forward: boolean;
+    backward: boolean;
+  };
+};
+
+const GameTreeContext = createContext<GameTreeContextType | undefined>(
+  undefined
+);
+
+export const useGameTree = () => {
+  const context = useContext(GameTreeContext);
+  if (!context)
+    throw new Error('useGameTree must be used within a GameTreeProvider');
+  return context;
+};
 
 function useGameTreeState(category?: string, id?: string | number) {
   const [gameTree, setGameTree] = useState<typeof GameTree | null>(null);
   const [currentNode, setCurrentNode] = useState<typeof GameTree.Node | null>(
     null
   );
-  const [loadingState, setLoadingState] = useState('idle');
+  const [startingNode, setStartingNode] = useState<GameTreeNode | null>(null);
+  const [currentComment, setCurrentComment] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     debugLog('GameTree', 'Initial mount with category and id:', {
@@ -36,67 +70,76 @@ function useGameTreeState(category?: string, id?: string | number) {
     });
   }, []);
 
-  // Debug function
-  const logGameTreeState = useCallback(() => {
-    console.group('GameTree State Debug');
-    console.log('GameTree:', gameTree ? 'Initialized' : 'Null');
-    console.log(
-      'Current Node:',
-      currentNode
-        ? {
-            id: currentNode.id,
-            data: currentNode.data,
-            children: gameTree?.get(currentNode.id).children.length
-          }
-        : 'Null'
-    );
-    console.log('Loading State:', loadingState);
-    console.groupEnd();
-  }, [gameTree, currentNode, loadingState]);
+  useEffect(() => {
+    if (currentNode?.data.C) {
+      setCurrentComment(currentNode.data.C[0]);
+    } else {
+      setCurrentComment(null);
+    }
+  }, [currentNode]);
+
+  useEffect(() => {
+    if (gameTree && !currentNode) {
+      debugLog('GameTree', 'Detected null currentNode, attempting recovery');
+      // Attempt to recover by setting to root or startingNode
+      setCurrentNode(startingNode || gameTree.root);
+    }
+  }, [gameTree, currentNode, startingNode]);
 
   useEffect(() => {
     async function loadProblem() {
       try {
         debugLog('GameTree', 'Attempting to load problem', { category, id });
-        setLoadingState('loading');
         if (category && id) {
+          // Load sgf from assets by Category/ProblemId
           const sgfContent = await loadSgfFromAssets(
             category as string,
             typeof id === 'string' ? parseInt(id) : id
           );
           debugLog('GameTree', 'SGF content loaded:', sgfContent);
-          setLoadingState('loaded');
-          load(sgfContent);
+
+          // Parse sgf to state
+          const rootNodes = sgf.parse(sgfContent, { getId });
+          debugLog('GameTree', 'Parsed root nodes:', rootNodes);
+
+          if (rootNodes.length === 0) throw new Error('Error with rootNodes');
+          const tree = new GameTree({ getId, root: rootNodes[0] });
+
+          debugLog('GameTree', 'Created game tree:', tree);
+          setGameTree(tree);
+
+          // Set startingNode and currentNode to node with {AW, AB}
+          let setupNode;
+          let node = tree.root;
+          while (!setupNode) {
+            if (
+              node.hasOwnProperty('AW') ||
+              node.hasOwnProperty('AB') ||
+              node.hasOwnProperty('W') ||
+              node.hasOwnProperty('B')
+            ) {
+              setupNode = node;
+            }
+            if (node.children.length > 0) {
+              node = node.children[0];
+            } else {
+              setupNode = tree.root;
+            }
+          }
+
+          setCurrentNode(setupNode);
+          setStartingNode(setupNode);
+
+          debugLog('GameTree', 'Set current node to setupNode:', setupNode);
+          setIsLoading(false);
         }
       } catch (error) {
         console.error('Error loading problem:', error);
-        setLoadingState('error');
       }
     }
 
     loadProblem();
   }, [category, id]);
-
-  const load = useCallback(
-    (sgfString: string) => {
-      try {
-        const rootNodes = sgf.parse(sgfString);
-        debugLog('GameTree', 'Parsed root nodes:', rootNodes);
-
-        const tree = new GameTree({ getId });
-        tree.root.data = rootNodes[0].data;
-
-        debugLog('GameTree', 'Created game tree:', tree);
-        setGameTree(tree);
-        setCurrentNode(tree.root);
-        debugLog('GameTree', 'Set current node to root:', tree.root);
-        setTimeout(logGameTreeState, 0);
-      } catch (error) {
-        console.error('Error parsing SGF:', error);
-      }
-    },
-    [logGameTreeState]
-  );
 
   const addMove = useCallback(
     (vertex: Vertex, currentPlayer: Sign) => {
@@ -108,80 +151,151 @@ function useGameTreeState(category?: string, id?: string | number) {
         return;
       }
 
-      debugLog('GameTree', 'Adding move:', { vertex, currentNode });
+      debugLog('GameTree', 'Adding move:', { vertex, currentPlayer });
 
       // Convert vertex to SGF format
-      const sgfVertex =
-        String.fromCharCode(97 + vertex[0]) +
-        String.fromCharCode(97 + vertex[1]);
+      const sgfVertex = vertexToSgf(vertex);
 
-      let moveData = {};
-      if (currentPlayer === 1) {
-        moveData = { B: [sgfVertex] };
-      } else {
-        moveData = { W: [sgfVertex] };
+      const moveProperty = currentPlayer === 1 ? 'B' : 'W';
+
+      // Check if the move already exists in children
+      const existingChild = currentNode.children
+        .map((child: GameTreeNode) => gameTree.get(child.id))
+        .find(
+          (child: GameTreeNode) => child.data[moveProperty]?.[0] === sgfVertex
+        );
+
+      if (existingChild) {
+        debugLog(
+          'GameTree',
+          'Move already exists, navigating to:',
+          existingChild
+        );
+        setCurrentNode(existingChild);
+        return;
       }
 
-      const newGameTree = gameTree.mutate((draft: typeof GameTree) => {
-        const newNode = { id: `move-${Date.now()}`, data: moveData };
-        draft.appendNode(currentNode.id, newNode);
-      });
+      // If move doesn't exist, create a new node
+      try {
+        let newNodeId;
+        const newGameTree = gameTree.mutate((draft: GameTreeType) => {
+          const newNode = { [moveProperty]: [sgfVertex] };
+          console.log('newNode: ', newNode);
+          const draftNodeId = draft.appendNode(currentNode.id, newNode);
+          newNodeId = draftNodeId;
+        });
 
-      debugLog('GameTree', 'Updated game tree:', newGameTree);
-      setGameTree(newGameTree);
+        debugLog('GameTree', 'Updated game tree:', newGameTree);
+        setGameTree(newGameTree);
 
-      const newChildren = newGameTree.get(currentNode.id).children;
-      if (newChildren.length > 0) {
-        const newNode = newGameTree.get(newChildren[0]);
+        // Navigate to the new node
+        // const newNodeId = newGameTree.get(currentNode.id).children[0];
+        const newNode = newGameTree.get(newNodeId);
         debugLog('GameTree', 'Setting new current node:', newNode);
-        setCurrentNode(newNode);
+        if (newNode) {
+          setCurrentNode(newNode);
+        } else {
+          console.error('Error creating new node');
+        }
+      } catch (error) {
+        debugLog('GameTree', 'Error updating game tree:', error);
       }
     },
     [gameTree, currentNode]
   );
 
+  const isValidGameState = useCallback(() => {
+    if (!gameTree || !currentNode) return false;
+
+    try {
+      const node = gameTree.get(currentNode.id);
+      return !!node;
+    } catch (error) {
+      return false;
+    }
+  }, [gameTree, currentNode]);
+
+  const isStartingNode = useCallback(
+    (node: GameTreeNode) => {
+      return node.id === startingNode.id;
+    },
+    [startingNode]
+  );
+
   const navigate = {
     forward: useCallback(() => {
       debugLog('GameTree', 'Attempting to navigate forward');
-      if (!currentNode || !gameTree) return;
-      const children = gameTree.get(currentNode.id).children;
-      debugLog('GameTree', 'Children nodes:', children);
-      if (children.length > 0) {
-        const nextNode = gameTree.get(children[0]);
-        debugLog('GameTree', 'Moving to next node:', nextNode);
-        setCurrentNode(nextNode);
+      if (!isValidGameState()) {
+        debugLog('GameTree', 'Invalid game state for forward navigation');
+        return;
       }
-    }, [currentNode, gameTree]),
+
+      const node = gameTree.get(currentNode.id);
+      if (!node) {
+        debugLog('GameTree', 'Current node not found in game tree');
+        return;
+      }
+
+      if (node.children.length > 0) {
+        const nextNode = gameTree.get(node.children[0].id);
+        if (nextNode) {
+          setCurrentNode(nextNode);
+        }
+      }
+    }, [isValidGameState, currentNode, gameTree]),
 
     backward: useCallback(() => {
       debugLog('GameTree', 'Attempting to navigate backward');
-      if (!currentNode || !gameTree) return;
-      const parentId = gameTree.get(currentNode.id).parentId;
-      const parent = gameTree.get(parentId);
-      debugLog('GameTree', 'Parent node:', parent);
+      if (!isValidGameState()) {
+        debugLog('GameTree', 'Invalid game state for backward navigation');
+        return;
+      }
+      if (isStartingNode(currentNode)) {
+        debugLog('GameTree', 'Currently at startingNode');
+        return;
+      }
+
+      const node = gameTree.get(currentNode.id);
+      if (!node) {
+        debugLog('GameTree', 'Current node not found in game tree');
+        return;
+      }
+
+      const parent = gameTree.get(currentNode?.parentId);
       if (parent) {
-        debugLog('GameTree', 'Moving to previous node:', parent);
         setCurrentNode(parent);
       }
-    }, [currentNode, gameTree]),
+    }, [isValidGameState, currentNode, gameTree, startingNode]),
 
     first: useCallback(() => {
-      debugLog('GameTree', 'Attempting to navigate to first');
-      if (!gameTree) return;
-      debugLog('GameTree', 'Moving to root:', gameTree.root);
-      setCurrentNode(gameTree.root);
-    }, [gameTree]),
+      debugLog('GameTree', 'Attempting to navigate to setup node');
+      if (!gameTree || !startingNode) return;
+
+      const node = gameTree.get(startingNode.id);
+      if (!node) {
+        debugLog('GameTree', 'Starting node not found in game tree');
+        return;
+      }
+
+      setCurrentNode(startingNode);
+    }, [isValidGameState, gameTree, startingNode]),
 
     last: useCallback(() => {
       debugLog('GameTree', 'Attempting to navigate to last');
       if (!currentNode || !gameTree) return;
-      let node = currentNode;
+
+      let node = gameTree.get(currentNode.id);
+      if (!node) {
+        debugLog('GameTree', 'Current node not found in game tree');
+        return;
+      }
+      // let node = currentNode;
       while (gameTree.get(node.id).children.length > 0) {
         node = gameTree.get(node.id).children[0];
       }
       debugLog('GameTree', 'Moving to node:', node);
       setCurrentNode(node);
-    }, [currentNode, gameTree])
+    }, [isValidGameState, currentNode, gameTree])
   };
 
   const canNavigate = {
@@ -194,21 +308,18 @@ function useGameTreeState(category?: string, id?: string | number) {
   };
 
   return {
+    isLoading,
     gameTree,
     currentNode,
-    load,
+    setCurrentNode,
+    startingNode,
+    setStartingNode,
+    currentComment,
     addMove,
     navigate,
     canNavigate
   };
 }
-
-export const useGameTree = () => {
-  const context = useContext(GameTreeContext);
-  if (!context)
-    throw new Error('useGameTree must be used within a GameTreeProvider');
-  return context;
-};
 
 export const GameTreeProvider: React.FC<GameTreeProviderProps> = ({
   children,

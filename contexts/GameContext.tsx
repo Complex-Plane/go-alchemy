@@ -7,13 +7,16 @@ import React, {
 } from 'react';
 import Board from '@sabaki/go-board';
 import { Vertex, Sign } from '@sabaki/go-board';
-import { useGameTree } from '@/hooks/useGameTree';
 import { sgfToVertex } from '@/utils/sgfUtils';
 import { debugLog } from '@/utils/debugLog';
+import { GameTreeNode, useGameTree } from './GameTreeContext';
 
 // Types that match @sabaki/go-board
 type BoardState = Sign[][];
 type StoneColor = Sign; // -1 for white, 1 for black, 0 for empty
+// Additional type exports for compatibility
+export type { Vertex, Sign };
+export type { Board };
 
 interface GameContextType {
   board: Board;
@@ -38,68 +41,102 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
   children
 }) => {
   const boardSize = 19;
+  const [isInitialized, setIsInitialized] = useState(false);
   const [board, setBoard] = useState(() => Board.fromDimensions(boardSize));
   const [currentPlayer, setCurrentPlayer] = useState<StoneColor>(1); // Black starts
 
-  const { gameTree, currentNode, addMove } = useGameTree();
+  const {
+    gameTree,
+    currentNode,
+    setCurrentNode,
+    startingNode,
+    setStartingNode,
+    currentComment,
+    addMove
+  } = useGameTree();
 
-  // Sync board with gameTree
+  // Initial setup effect
   useEffect(() => {
-    if (gameTree && currentNode) {
+    if (gameTree && !isInitialized) {
+      debugLog('GameContext', 'Performing initial board setup');
+      let newBoard = Board.fromDimensions(boardSize);
+
+      // Add initial setup moves
+      if (startingNode.data.AB) {
+        startingNode.data.AB.forEach((sgfVertex: string) => {
+          const vertex: Vertex = sgfToVertex(sgfVertex);
+          newBoard = newBoard.makeMove(1, vertex);
+        });
+      }
+
+      if (startingNode.data.AW) {
+        startingNode.data.AW.forEach((sgfVertex: string) => {
+          const vertex: Vertex = sgfToVertex(sgfVertex);
+          newBoard = newBoard.makeMove(-1, vertex);
+        });
+      }
+
+      setBoard(newBoard);
+      setIsInitialized(true);
+    }
+  }, [gameTree, isInitialized]);
+
+  // Board syncing effect
+  useEffect(() => {
+    if (gameTree && currentNode && isInitialized) {
       debugLog('GameContext', 'Syncing board with currentNode:', currentNode);
       let newBoard = Board.fromDimensions(boardSize);
 
-      // Process move history to rebuild board
-      const moveHistory = [];
-      let node = currentNode;
-      while (node.parentId) {
-        moveHistory.unshift(node);
-        node = gameTree.get(node.parentId);
+      // Find the setup node first
+      const rootNode = gameTree.root;
+      let setupNode = rootNode;
+      while (!setupNode.data.AW && !setupNode.data.AB) {
+        if (setupNode.children.length > 0) {
+          setupNode = setupNode.children[0];
+        } else {
+          break;
+        }
       }
 
-      // Add initial setup moves
-      if (gameTree.root.data.AB) {
-        gameTree.root.data.AB.forEach((sgfVertex: string) => {
-          const vertex = [
-            sgfVertex.charCodeAt(0) - 97,
-            sgfVertex.charCodeAt(1) - 97
-          ];
-          moveHistory.unshift({ data: { B: [sgfVertex] } });
+      // Replay setup moves
+      if (setupNode.data.AB) {
+        setupNode.data.AB.forEach((sgfVertex: string) => {
+          const vertex: Vertex = sgfToVertex(sgfVertex);
+          newBoard = newBoard.makeMove(1, vertex);
         });
       }
-      if (gameTree.root.data.AW) {
-        gameTree.root.data.AW.forEach((sgfVertex: string) => {
-          const vertex = [
-            sgfVertex.charCodeAt(0) - 97,
-            sgfVertex.charCodeAt(1) - 97
-          ];
-          moveHistory.unshift({ data: { W: [sgfVertex] } });
+
+      if (setupNode.data.AW) {
+        setupNode.data.AW.forEach((sgfVertex: string) => {
+          const vertex: Vertex = sgfToVertex(sgfVertex);
+          newBoard = newBoard.makeMove(-1, vertex);
         });
+      }
+
+      // Then process moves from setup node to current node
+      const moveHistory = [];
+      let node = currentNode;
+      while (node.id !== setupNode.id && node.parentId) {
+        moveHistory.unshift(node);
+        node = gameTree.get(node.parentId);
       }
 
       // Replay moves
       moveHistory.forEach((node) => {
         if (node.data.B) {
           const sgfVertex = node.data.B[0];
-          const vertex: Vertex = [
-            sgfVertex.charCodeAt(0) - 97,
-            sgfVertex.charCodeAt(1) - 97
-          ];
+          const vertex: Vertex = sgfToVertex(sgfVertex);
           newBoard = newBoard.makeMove(1, vertex);
         } else if (node.data.W) {
           const sgfVertex = node.data.W[0];
-          const vertex: Vertex = [
-            sgfVertex.charCodeAt(0) - 97,
-            sgfVertex.charCodeAt(1) - 97
-          ];
+          const vertex: Vertex = sgfToVertex(sgfVertex);
           newBoard = newBoard.makeMove(-1, vertex);
         }
       });
 
-      debugLog('GameContext', 'Updated board state:', newBoard.signMap);
       setBoard(newBoard);
     }
-  }, [gameTree, currentNode]);
+  }, [gameTree, currentNode, isInitialized]);
 
   // Get the current board state in the format @sabaki/go-board uses
   const getBoardState = useCallback((): BoardState => {
@@ -124,13 +161,20 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
       if (newBoard === null) return false;
 
       // Update the board and switch players
-      addMove(vertex);
+      addMove(vertex, currentPlayer);
       setBoard(newBoard);
       setCurrentPlayer((prev) => (prev === 1 ? -1 : 1));
       return true;
     },
     [board, currentPlayer]
   );
+
+  // if (isLoading) {
+  //   return null; // or a loading indicator
+  // }
+  // if (!gameTree || !currentNode) {
+  //   return null; // or a loading indicator
+  // }
 
   return (
     <GameContext.Provider
@@ -147,7 +191,3 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
     </GameContext.Provider>
   );
 };
-
-// Additional type exports for compatibility
-export type { Vertex, Sign };
-export type { Board };

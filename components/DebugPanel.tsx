@@ -4,17 +4,23 @@ import { useGameTree } from '@/contexts/GameTreeContext';
 import { useGame } from '@/contexts/GameContext';
 
 export const DebugPanel = () => {
-  const { gameTree, currentNode } = useGameTree();
-  const { board, currentPlayer } = useGame();
+  const { currentNode } = useGameTree();
+  const { currentPlayer } = useGame();
 
   return __DEV__ ? (
     <View style={styles.debugContainer}>
-      <Text style={styles.heading}>Debug Info</Text>
-      <Text>GameTree: {gameTree ? 'Loaded' : 'Not Loaded'}</Text>
-      <Text>Current Node ID: {currentNode?.id}</Text>
-      <Text>Current Player: {currentPlayer === 1 ? 'Black' : 'White'}</Text>
+      <Text style={styles.heading}>
+        Debug Info: Current Player: {currentPlayer === 1 ? 'Black' : 'White'}
+      </Text>
       <Text>
-        Board: {board ? `${board.width}x${board.height}` : 'Not Loaded'}
+        Current Node [{currentNode?.id}]: {JSON.stringify(currentNode?.data)}
+      </Text>
+      <Text>
+        Parent Node: [{currentNode?.parentId}], Children Nodes: [
+        {JSON.stringify(
+          currentNode?.children.map((node: any) => node.id).join(', ')
+        )}
+        ]
       </Text>
     </View>
   ) : null;

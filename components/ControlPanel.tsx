@@ -17,13 +17,13 @@ export const ControlPanel: React.FC = () => {
         <Button
           icon={{ name: 'chevron-left', color: 'white' }}
           onPress={navigate.backward}
-          // disabled={!canNavigate?.backward}
+          disabled={!canNavigate?.backward}
           type='clear'
         />
         <Button
           icon={{ name: 'chevron-right', color: 'white' }}
           onPress={navigate.forward}
-          // disabled={!canNavigate?.forward}
+          disabled={!canNavigate?.forward}
           type='clear'
         />
         <Button

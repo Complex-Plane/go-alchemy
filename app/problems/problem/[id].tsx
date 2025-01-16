@@ -12,6 +12,7 @@ import { GameProvider } from '@/contexts/GameContext';
 import { useLocalSearchParams } from 'expo-router';
 import { GameTreeProvider } from '@/contexts/GameTreeContext';
 import { DebugPanel } from '@/components/DebugPanel';
+import CommentDisplay from '@/components/ui/CommentDisplay';
 
 export default function ProblemScreen() {
   const { id, category } = useLocalSearchParams();
@@ -22,13 +23,14 @@ export default function ProblemScreen() {
   const availableHeight =
     windowHeight - insets.top - insets.bottom - CONTROL_PANEL_HEIGHT;
 
-  const range = { startX: 0, startY: 0, endX: 8, endY: 8 };
+  const range = { startX: 0, startY: 0, endX: 18, endY: 18 };
 
   return (
     <ErrorBoundary>
       <GameTreeProvider category={category as string} id={id as string}>
         <GameProvider>
           <SafeAreaView style={styles.container}>
+            <CommentDisplay />
             <View style={[styles.boardContainer, { height: availableHeight }]}>
               <GoBoard size={19} range={range} />
             </View>

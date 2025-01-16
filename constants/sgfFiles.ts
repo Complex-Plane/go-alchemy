@@ -1,48 +1,75 @@
-export const SGF_FILES = {
+type Problem = {
+  uri: string;
+  name: string;
+  id: number;
+};
+
+type SGFCategory = {
+  problems: Problem[];
+};
+
+type SGFFiles = {
+  [key: string]: SGFCategory;
+};
+
+export const SGF_FILES: SGFFiles = {
   joseki: {
-    problems: [{ 
+    problems: [
+      {
         uri: require('../assets/sgf/joseki/problem1.sgf'),
         name: 'problem1',
         id: 0
-      }]
+      }
+    ]
   },
   opening: {
-    problems: [{ 
+    problems: [
+      {
         uri: require('../assets/sgf/opening/problem1.sgf'),
         name: 'problem1',
         id: 0
-      }]
+      }
+    ]
   },
   sabaki: {
-    problems: [{ 
+    problems: [
+      {
         uri: require('../assets/sgf/sabaki/problem1.sgf'),
         name: 'problem1',
         id: 0
-      }]
+      }
+    ]
   },
   shape: {
-    problems: [{ 
+    problems: [
+      {
         uri: require('../assets/sgf/shape/problem1.sgf'),
         name: 'problem1',
         id: 0
-      }]
+      }
+    ]
   },
   tesuji: {
-    problems: [{ 
+    problems: [
+      {
         uri: require('../assets/sgf/tesuji/problem1.sgf'),
         name: 'problem1',
         id: 0
-      }, { 
+      },
+      {
         uri: require('../assets/sgf/tesuji/problem2.sgf'),
         name: 'problem2',
         id: 1
-      }]
+      }
+    ]
   },
   tsumego: {
-    problems: [{ 
+    problems: [
+      {
         uri: require('../assets/sgf/tsumego/problem1.sgf'),
         name: 'problem1',
         id: 0
-      }]
+      }
+    ]
   }
 };
