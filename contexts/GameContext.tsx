@@ -14,7 +14,7 @@ import { GameTreeNode, useGameTree } from './GameTreeContext';
 // Types that match @sabaki/go-board
 type BoardState = Sign[][];
 type StoneColor = Sign; // -1 for white, 1 for black, 0 for empty
-// Additional type exports for compatibility
+
 export type { Vertex, Sign };
 export type { Board };
 
@@ -23,8 +23,12 @@ interface GameContextType {
   boardState: BoardState;
   currentPlayer: StoneColor;
   boardSize: number;
-  placeStone: (vertex: Vertex) => boolean;
+  placeStone: (vertex: Vertex) => Promise<boolean>;
   isValidMove: (vertex: Vertex) => boolean;
+  autoPlayOpponent: boolean;
+  setAutoPlayOpponent: (value: boolean) => void;
+  autoPlayDelay: number;
+  setAutoPlayDelay: (value: number) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -43,17 +47,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
   const boardSize = 19;
   const [isInitialized, setIsInitialized] = useState(false);
   const [board, setBoard] = useState(() => Board.fromDimensions(boardSize));
-  const [currentPlayer, setCurrentPlayer] = useState<StoneColor>(1); // Black starts
+  const [currentPlayer, setCurrentPlayer] = useState<StoneColor>(1);
+  const [playerColor, setPlayerColor] = useState<Sign>(1);
+  const [autoPlayOpponent, setAutoPlayOpponent] = useState(true);
+  const [autoPlayDelay, setAutoPlayDelay] = useState(500);
 
-  const {
-    gameTree,
-    currentNode,
-    setCurrentNode,
-    startingNode,
-    setStartingNode,
-    currentComment,
-    addMove
-  } = useGameTree();
+  const { gameTree, currentNode, startingNode, addMove, setCurrentNode } =
+    useGameTree();
 
   // Initial setup effect
   useEffect(() => {
@@ -124,10 +124,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
       // Replay moves
       moveHistory.forEach((node) => {
         if (node.data.B) {
+          setCurrentPlayer(-1 as Sign);
           const sgfVertex = node.data.B[0];
           const vertex: Vertex = sgfToVertex(sgfVertex);
           newBoard = newBoard.makeMove(1, vertex);
         } else if (node.data.W) {
+          setCurrentPlayer(-1 as Sign);
           const sgfVertex = node.data.W[0];
           const vertex: Vertex = sgfToVertex(sgfVertex);
           newBoard = newBoard.makeMove(-1, vertex);
@@ -138,10 +140,32 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [gameTree, currentNode, isInitialized]);
 
+  // Sync player color with current node
+  useEffect(() => {
+    if (currentNode) {
+      // If resetting to initial node, set color to playerColor
+      if (currentNode.id === startingNode.id) {
+        setCurrentPlayer(playerColor);
+      }
+      // If the last move was black (B), next move should be white
+      else if (currentNode.data.B) {
+        setCurrentPlayer(-1);
+      }
+      // If the last move was white (W), next move should be black
+      else if (currentNode.data.W) {
+        setCurrentPlayer(1);
+      }
+    }
+  }, [currentNode]);
+
   // Get the current board state in the format @sabaki/go-board uses
   const getBoardState = useCallback((): BoardState => {
     return board.signMap;
   }, [board]);
+
+  const togglePlayerColor = useCallback(() => {
+    setCurrentPlayer((prev) => (prev * -1) as Sign);
+  }, []);
 
   // Check if a move is valid
   const isValidMove = useCallback(
@@ -151,9 +175,29 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
     [board]
   );
 
+  const playOpponentMove = useCallback(async () => {
+    if (!currentNode || !gameTree) return;
+
+    const node = gameTree.get(currentNode.id);
+    if (!node || node.children.length === 0) return;
+
+    const nextNode = gameTree.get(node.children[0].id);
+    if (!nextNode) return;
+
+    // Check if the next node is actually an opponent move
+    const isOpponentMove =
+      (playerColor === 1 && nextNode.data.W) ||
+      (playerColor === -1 && nextNode.data.B);
+
+    if (isOpponentMove) {
+      await new Promise((resolve) => setTimeout(resolve, autoPlayDelay));
+      setCurrentNode(nextNode);
+    }
+  }, [currentNode, gameTree, playerColor, autoPlayDelay]);
+
   // Place a stone and handle captures
   const placeStone = useCallback(
-    (vertex: Vertex): boolean => {
+    async (vertex: Vertex): Promise<boolean> => {
       // Try to make the move
       const newBoard = board.makeMove(currentPlayer, vertex);
 
@@ -162,19 +206,17 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
 
       // Update the board and switch players
       addMove(vertex, currentPlayer);
+      if (autoPlayOpponent) {
+        console.log('Autoplaying opponent move');
+        // TODO: fix
+        // await playOpponentMove();
+      }
       setBoard(newBoard);
       setCurrentPlayer((prev) => (prev === 1 ? -1 : 1));
       return true;
     },
     [board, currentPlayer]
   );
-
-  // if (isLoading) {
-  //   return null; // or a loading indicator
-  // }
-  // if (!gameTree || !currentNode) {
-  //   return null; // or a loading indicator
-  // }
 
   return (
     <GameContext.Provider
@@ -184,7 +226,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
         currentPlayer,
         boardSize,
         placeStone,
-        isValidMove
+        isValidMove,
+        autoPlayOpponent,
+        setAutoPlayOpponent,
+        autoPlayDelay,
+        setAutoPlayDelay
       }}
     >
       {children}

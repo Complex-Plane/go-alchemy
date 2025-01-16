@@ -108,21 +108,26 @@ function useGameTreeState(category?: string, id?: string | number) {
           debugLog('GameTree', 'Created game tree:', tree);
           setGameTree(tree);
 
-          // Set startingNode and currentNode to node with {AW, AB}
+          // Set startingNode and currentNode to node with {AW, AB, A, B}
           let setupNode;
           let node = tree.root;
           while (!setupNode) {
             if (
-              node.hasOwnProperty('AW') ||
-              node.hasOwnProperty('AB') ||
-              node.hasOwnProperty('W') ||
-              node.hasOwnProperty('B')
+              node.data.hasOwnProperty('AW') ||
+              node.data.hasOwnProperty('AB')
             ) {
               setupNode = node;
+            } else if (
+              node.data.hasOwnProperty('W') ||
+              node.data.hasOwnProperty('B')
+            ) {
+              setupNode = tree.get(node.parentId);
             }
             if (node.children.length > 0) {
+              // Search next node
               node = node.children[0];
             } else {
+              // Searched entire tree and didn't find any moves
               setupNode = tree.root;
             }
           }
@@ -140,6 +145,26 @@ function useGameTreeState(category?: string, id?: string | number) {
 
     loadProblem();
   }, [category, id]);
+
+  // const playOpponentMove = useCallback(async () => {
+  //     if (!currentNode || !gameTree) return;
+
+  //     const node = gameTree.get(currentNode.id);
+  //     if (!node || node.children.length === 0) return;
+
+  //     const nextNode = gameTree.get(node.children[0].id);
+  //     if (!nextNode) return;
+
+  //     // Check if the next node is actually an opponent move
+  //     const isOpponentMove =
+  //       (playerColor === 1 && nextNode.data.W) ||
+  //       (playerColor === -1 && nextNode.data.B);
+
+  //     if (isOpponentMove) {
+  //       await new Promise(resolve => setTimeout(resolve, autoPlayDelay));
+  //       setCurrentNode(nextNode);
+  //     }
+  //   }, [currentNode, gameTree, playerColor, autoPlayDelay]);
 
   const addMove = useCallback(
     (vertex: Vertex, currentPlayer: Sign) => {
@@ -166,12 +191,11 @@ function useGameTreeState(category?: string, id?: string | number) {
         );
 
       if (existingChild) {
-        debugLog(
-          'GameTree',
-          'Move already exists, navigating to:',
-          existingChild
-        );
         setCurrentNode(existingChild);
+
+        // if (autoPlayOpponent) {
+        //   await playOpponentMove();
+        // }
         return;
       }
 

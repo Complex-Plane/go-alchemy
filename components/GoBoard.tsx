@@ -6,6 +6,8 @@ import { useBoardDimensions } from '@/hooks/useBoardDimensions';
 import { useGame } from '@/contexts/GameContext';
 import { useBoardInput } from '@/hooks/useBoardInput';
 import { profilerRender } from '@/utils/profilerUtils';
+import { useGameTree } from '@/contexts/GameTreeContext';
+import { vertexToSgf } from '@/utils/sgfUtils';
 
 interface GoBoardProps {
   size: number;
@@ -14,6 +16,7 @@ interface GoBoardProps {
 
 export const GoBoard: React.FC<GoBoardProps> = ({ size, range }) => {
   const { board, currentPlayer, isValidMove } = useGame();
+  const { currentNode } = useGameTree();
   const { handleMove } = useBoardInput();
   const [hoveredIntersection, setHoveredIntersection] =
     useState<Coordinate | null>(null);
@@ -105,16 +108,31 @@ export const GoBoard: React.FC<GoBoardProps> = ({ size, range }) => {
         const stone = board.get([x, y]);
         if (stone !== 0) {
           const [cx, cy] = transformCoordinates(x, y);
+          const isLastPlayedStone =
+            currentNode?.data.B?.[0] === vertexToSgf([x, y]) ||
+            currentNode?.data.W?.[0] === vertexToSgf([x, y]);
+
           stones.push(
-            <Circle
-              key={`${x}-${y}`}
-              cx={cx}
-              cy={cy}
-              r={spacing * 0.47}
-              fill={stone === 1 ? 'black' : 'white'}
-              stroke='black'
-              strokeWidth={stone === -1 ? 1 : 0}
-            />
+            <G key={`${x}-${y}`}>
+              <Circle
+                cx={cx}
+                cy={cy}
+                r={spacing * 0.47}
+                fill={stone === 1 ? 'black' : 'white'}
+                stroke='black'
+                strokeWidth={stone === -1 ? 1 : 0}
+              />
+              {isLastPlayedStone && (
+                <Circle
+                  cx={cx}
+                  cy={cy}
+                  r={spacing * 0.25}
+                  stroke={stone === 1 ? 'white' : 'black'}
+                  strokeWidth={1.5}
+                  fill={stone === 1 ? 'black' : 'white'}
+                />
+              )}
+            </G>
           );
         }
       }
