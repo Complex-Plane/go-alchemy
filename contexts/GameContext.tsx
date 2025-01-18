@@ -84,7 +84,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
   // Board syncing effect
   useEffect(() => {
     if (gameTree && currentNode && isInitialized) {
-      debugLog('GameContext', 'Syncing board with currentNode:', currentNode);
+      debugLog('GameContext', 'Syncing board with currentNode:');
       let newBoard = Board.fromDimensions(boardSize);
 
       // Find the setup node first

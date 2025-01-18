@@ -16,6 +16,6 @@ C[Black to play and live.]
 (;B[ah];W[af]
 (;B[ae];W[bf];B[ag];W[bf]
 (;B[af];W[ce]C[oops! you can't take this stone])
-(;B[ce];W[af];B[bg]C[RIGHT black plays under the stones and lives]))
+(;B[ce];W[af];B[bg]C[Correct. black plays under the stones and lives]))
 (;B[bf];W[ae]))
 (;B[ae];W[ag]))

@@ -11,8 +11,9 @@ import { GoBoard } from '@/components/GoBoard';
 import { GameProvider } from '@/contexts/GameContext';
 import { useLocalSearchParams } from 'expo-router';
 import { GameTreeProvider } from '@/contexts/GameTreeContext';
-import { DebugPanel } from '@/components/DebugPanel';
 import CommentDisplay from '@/components/ui/CommentDisplay';
+import ToggleShowHint from '@/components/ToggleShowHint';
+import ToggleShowCoordinates from '@/components/ToggleShowCoordinates';
 
 export default function ProblemScreen() {
   const { id, category } = useLocalSearchParams();
@@ -35,7 +36,9 @@ export default function ProblemScreen() {
               <GoBoard size={19} range={range} />
             </View>
             <ControlPanel />
-            {__DEV__ && <DebugPanel />}
+            <ToggleShowHint />
+            <ToggleShowCoordinates />
+            {/* {__DEV__ && <DebugPanel />} */}
           </SafeAreaView>
         </GameProvider>
       </GameTreeProvider>

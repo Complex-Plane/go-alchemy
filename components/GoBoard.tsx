@@ -1,13 +1,15 @@
 import React, { Profiler, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
-import Svg, { Line, Circle, G } from 'react-native-svg';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/store';
+import Svg, { Line, Circle, G, Text as SvgText } from 'react-native-svg';
 import { BoardRange, Coordinate } from '@/types/board';
 import { useBoardDimensions } from '@/hooks/useBoardDimensions';
 import { useGame } from '@/contexts/GameContext';
 import { useBoardInput } from '@/hooks/useBoardInput';
 import { profilerRender } from '@/utils/profilerUtils';
 import { useGameTree } from '@/contexts/GameTreeContext';
-import { vertexToSgf } from '@/utils/sgfUtils';
+import { vertexToSgf, sgfToVertex } from '@/utils/sgfUtils';
 
 interface GoBoardProps {
   size: number;
@@ -20,6 +22,11 @@ export const GoBoard: React.FC<GoBoardProps> = ({ size, range }) => {
   const { handleMove } = useBoardInput();
   const [hoveredIntersection, setHoveredIntersection] =
     useState<Coordinate | null>(null);
+
+  const showHint = useSelector((state: RootState) => state.settings.showHint);
+  const showCoordinates = useSelector(
+    (state: RootState) => state.settings.showCoordinates
+  );
 
   const {
     spacing,
@@ -52,6 +59,17 @@ export const GoBoard: React.FC<GoBoardProps> = ({ size, range }) => {
     }
     setHoveredIntersection(null);
   };
+
+  const getColumnLabel = (col: number): string => {
+    if (col >= 8) col++; // Skip 'I'
+    return String.fromCharCode(65 + col); // 65 is 'A' in ASCII
+  };
+
+  // const renderCoordinates = (type: string, index: number) => {
+  //   const letters = 'ABCDEFGHJKLMNOPQRSTUVWXYZ'; // Skip 'I'
+  //   if (type === 'row') return `${index + 1}`;
+  //   if (type === 'col') return letters[index];
+  // };
 
   const LINE_EXTENSION = 0.5;
 
@@ -212,6 +230,184 @@ export const GoBoard: React.FC<GoBoardProps> = ({ size, range }) => {
     );
   };
 
+  const renderHints = () => {
+    if (!showHint || !currentNode?.data.LB) return null;
+
+    const hints = [];
+    const labels = currentNode.data.LB;
+
+    labels.forEach((label: string) => {
+      const [coordinate, type] = label.split(':');
+      const [x, y] = sgfToVertex(coordinate);
+
+      if (x >= startX && x <= endX && y >= startY && y <= endY) {
+        const [cx, cy] = transformCoordinates(x, y);
+        const color = type === 'o' ? 'green' : type === 'x' ? 'red' : null;
+        if (color) {
+          hints.push(
+            <Circle
+              key={`hint-${x}-${y}`}
+              cx={cx}
+              cy={cy}
+              r={spacing * 0.2}
+              fill={color}
+              opacity={1}
+            />
+          );
+        }
+      }
+    });
+
+    return hints;
+  };
+
+  const renderColumnLabels = () => {
+    if (!showCoordinates) return null;
+
+    const labels = [];
+    const yTop = -spacing * 0.2; // Above the board
+    const yBottom = actualBoardSize + spacing * 0.2; // Below the board
+
+    for (let x = startX; x <= endX; x++) {
+      const [cx] = transformCoordinates(x, 0);
+      const label = getColumnLabel(x);
+
+      labels.push(
+        <SvgText
+          key={`top-${x}`}
+          x={cx}
+          y={yTop}
+          textAnchor='middle'
+          fill='black'
+          fontSize={spacing * 0.5}
+        >
+          {label}
+        </SvgText>,
+        <SvgText
+          key={`bottom-${x}`}
+          x={cx}
+          y={yBottom}
+          textAnchor='middle'
+          fill='black'
+          fontSize={spacing * 0.5}
+        >
+          {label}
+        </SvgText>
+      );
+    }
+
+    return labels;
+  };
+
+  const renderRowLabels = () => {
+    if (!showCoordinates) return null;
+
+    const labels = [];
+    const xLeft = -spacing * 0.2; // Left of the board
+    const xRight = actualBoardSize + spacing * 0.2; // Right of the board
+
+    for (let y = startY; y <= endY; y++) {
+      const [, cy] = transformCoordinates(0, y);
+      const label = (y + 1).toString();
+
+      labels.push(
+        <SvgText
+          key={`left-${y}`}
+          x={xLeft}
+          y={cy}
+          textAnchor='middle'
+          alignmentBaseline='middle'
+          fill='black'
+          fontSize={spacing * 0.5}
+        >
+          {label}
+        </SvgText>,
+        <SvgText
+          key={`right-${y}`}
+          x={xRight}
+          y={cy}
+          textAnchor='middle'
+          alignmentBaseline='middle'
+          fill='black'
+          fontSize={spacing * 0.5}
+        >
+          {label}
+        </SvgText>
+      );
+    }
+
+    return labels;
+  };
+
+  const renderCoordinates = () => {
+    if (!showCoordinates) return null;
+
+    const coordinates = [];
+    const textOffset = spacing / 2;
+
+    // Column labels (top and bottom)
+    for (let x = startX; x <= endX; x++) {
+      const [topX, topY] = transformCoordinates(x, startY);
+      const [bottomX, bottomY] = transformCoordinates(x, endY);
+      const label = getColumnLabel(x);
+
+      coordinates.push(
+        <SvgText
+          key={`top-${x}`}
+          x={topX}
+          y={Math.max(10, topY - textOffset)}
+          textAnchor='middle'
+          fontSize={spacing / 2}
+          fill='black'
+        >
+          {label}
+        </SvgText>,
+        <SvgText
+          key={`bottom-${x}`}
+          x={bottomX}
+          y={bottomY + textOffset}
+          textAnchor='middle'
+          fontSize={spacing / 2}
+          fill='black'
+        >
+          {label}
+        </SvgText>
+      );
+    }
+
+    // Row labels (left and right)
+    for (let y = startY; y <= endY; y++) {
+      const [leftX, leftY] = transformCoordinates(startX, y);
+      const [rightX, rightY] = transformCoordinates(endX, y);
+      const label = (y + 1).toString();
+
+      coordinates.push(
+        <SvgText
+          key={`left-${y}`}
+          x={Math.max(10, leftX - textOffset)}
+          y={leftY + spacing / 8}
+          textAnchor='middle'
+          fontSize={spacing / 2}
+          fill='black'
+        >
+          {label}
+        </SvgText>,
+        <SvgText
+          key={`right-${y}`}
+          x={rightX + textOffset}
+          y={rightY + spacing / 8}
+          textAnchor='middle'
+          fontSize={spacing / 2}
+          fill='black'
+        >
+          {label}
+        </SvgText>
+      );
+    }
+
+    return coordinates;
+  };
+
   return (
     // <Profiler id='GoBoard' onRender={profilerRender}>
     <View
@@ -227,11 +423,21 @@ export const GoBoard: React.FC<GoBoardProps> = ({ size, range }) => {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {renderGrid()}
-        {renderStarPoints()}
-        {renderHighlightLines()}
-        {renderStones()}
-        {renderGhostStone()}
+        <G
+          transform={`translate(${showCoordinates ? spacing * 0.75 : 0}, ${
+            showCoordinates ? spacing * 0.75 : 0
+          })`}
+        >
+          {renderGrid()}
+          {renderStarPoints()}
+          {renderHighlightLines()}
+          {renderStones()}
+          {renderHints()}
+          {renderGhostStone()}
+          {/* {renderCoordinates()} */}
+          {renderColumnLabels()}
+          {renderRowLabels()}
+        </G>
       </Svg>
     </View>
     // </Profiler>
