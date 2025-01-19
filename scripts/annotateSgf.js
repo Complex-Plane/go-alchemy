@@ -1,7 +1,7 @@
 const GameTree = require('@sabaki/immutable-gametree');
 const sgf = require('@sabaki/sgf');
-import { getId } from '@/utils/getId';
-import { loadSgfFromAssets } from '@/utils/sgfLoader';
+import { getId } from '../utils/getId';
+import { loadSgfFromAssets } from '../utils/sgfLoader';
 
 // Function to load SGF file and create a game tree
 export async function loadSgfTree(category, id) {
@@ -123,7 +123,6 @@ export async function processGameTreeFromFile(category, id) {
 
   // Function to process each node in the tree
   function processNode(nodeId) {
-    // console.log('Processing node ', nodeId);
     // Add hint labels to this node
     tree = addHintLabels(tree, nodeId);
 
@@ -136,12 +135,21 @@ export async function processGameTreeFromFile(category, id) {
 
   // Start processing from the root
   processNode(tree.root.id);
-  // tree = addHintLabels(tree, tree.root.id);
 
   console.log('Finished labeling tree...');
 
   // Convert back to SGF
-  const newTree = treeToSgf(tree);
-  console.log(newTree);
-  return newTree;
+  // const newTree = treeToSgf(tree);
+  const newSgf = sgf.stringify(tree);
+  // sgf.stringify(nodes[, options])
+  //   nodes <NodeObject[]>
+  //   options <Object> (optional)
+  //   linebreak <String> (optional) - Default: "\n"
+  //   indent <String> (optional) - Default: " "
+  //   Returns an SGF string representing the root nodes nodes.
+
+  console.log(newSgf);
+  return newSgf;
 }
+
+processGameTreeFromFile('tesuji', '0');
