@@ -1,8 +1,38 @@
 [
   {
     "id": "1",
-    "filename": "problem1.sgf",
-    "difficulty": "easy",
-    "description": "Capture the stone"
+    "filename": "problem1.sgf"
+  },
+  {
+    "id": "2",
+    "filename": "problem2.sgf"
+  },
+  {
+    "id": "3",
+    "filename": "problem3.sgf"
+  },
+  {
+    "id": "4",
+    "filename": "problem4.sgf"
+  },
+  {
+    "id": "5",
+    "filename": "problem5.sgf"
+  },
+  {
+    "id": "6",
+    "filename": "problem6.sgf"
+  },
+  {
+    "id": "7",
+    "filename": "problem7.sgf"
+  },
+  {
+    "id": "8",
+    "filename": "problem8.sgf"
+  },
+  {
+    "id": "9",
+    "filename": "problem9.sgf"
   }
 ]

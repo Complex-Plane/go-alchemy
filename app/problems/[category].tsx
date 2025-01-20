@@ -10,7 +10,8 @@ export default function ProblemList() {
 
   // Get problems for the current category
   const problems = category ? SGF_FILES[category as string]?.problems : [];
-
+  console.log(category);
+  console.log(problems);
   return (
     <View>
       <FlatList
