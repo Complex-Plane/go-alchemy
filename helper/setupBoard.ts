@@ -1,56 +1,9 @@
 import { Board } from '@/contexts/GameContext';
 import { GameTreeNode } from '@/contexts/GameTreeContext';
+import { BoardRange } from '@/types/board';
+import { BoardTransformation, Reflection, Rotation } from '@/types/transforms';
 import { sgfToVertex } from '@/utils/sgfUtils';
 import GoBoard, { Sign, Vertex } from '@sabaki/go-board';
-
-type Rotation = 0 | 90 | 180 | 270;
-type Reflection =
-  | 'none'
-  | 'horizontal'
-  | 'vertical'
-  | 'diagonal'
-  | 'antidiagonal';
-type ColorInversion = boolean;
-
-interface BoardTransformation {
-  rotation: Rotation;
-  reflection: Reflection;
-  invertColors: ColorInversion;
-}
-
-export { Rotation, Reflection, ColorInversion, BoardTransformation };
-
-// Helper functions for transforming coordinates
-// export const transformVertex = (
-//   vertex: Vertex,
-//   boardSize: number,
-//   transformation: BoardTransformation
-// ): Vertex => {
-//   let [x, y] = vertex;
-
-//   // Apply reflection first
-//   switch (transformation.reflection) {
-//     case 'horizontal':
-//       x = boardSize - 1 - x;
-//       break;
-//     case 'vertical':
-//       y = boardSize - 1 - y;
-//       break;
-//     case 'diagonal':
-//       [x, y] = [y, x];
-//       break;
-// case 'antidiagonal':
-//   [x, y] = [boardSize - 1 - y, boardSize - 1 - x];
-//   break;
-//   }
-
-//   // Then apply rotation
-//   for (let i = 0; i < transformation.rotation / 90; i++) {
-//     [x, y] = [y, boardSize - 1 - x];
-//   }
-
-//   return [x, y];
-// };
 
 export const invertTransformation = (
   vertex: Vertex,
@@ -74,9 +27,6 @@ export const invertTransformation = (
       break;
     case 'diagonal':
       [x, y] = [y, x];
-      break;
-    case 'antidiagonal':
-      [x, y] = [boardSize - 1 - y, boardSize - 1 - x];
       break;
   }
 
@@ -137,9 +87,6 @@ const transformVertex = (
     case 'diagonal':
       [x, y] = [y, x];
       break;
-    case 'antidiagonal':
-      [x, y] = [boardSize - 1 - y, boardSize - 1 - x];
-      break;
   }
 
   return [x, y];
@@ -192,50 +139,77 @@ export const inverseTransformation = (
   return transformVertex(vertex, inverseTransform, boardSize);
 };
 
-// export const setUpBoard = (
-//   startingNode: GameTreeNode,
-//   boardSize: number,
-//   transformation: BoardTransformation
-// ): Board => {
-//   let newBoard = GoBoard.fromDimensions(boardSize);
+export const transformRange = (
+  range: BoardRange,
+  transformation: BoardTransformation,
+  boardSize: number
+): BoardRange => {
+  const { startX, startY, endX, endY } = range;
+  let newRange: BoardRange = { ...range };
 
-//   // Add initial setup moves with transformation
-//   if (startingNode.data.AB) {
-//     startingNode.data.AB.forEach((sgfVertex: string) => {
-//       const vertex = sgfToVertex(sgfVertex);
-//       const transformedVertex = transformVertex(
-//         vertex,
-//         boardSize,
-//         transformation
-//       );
-//       const color = transformation.colorInversion ? -1 : 1;
-//       newBoard = newBoard.makeMove(color, transformedVertex);
-//     });
-//   }
+  // Apply rotation
+  switch (transformation.rotation) {
+    case 90:
+      newRange = {
+        startX: startY,
+        startY: boardSize - 1 - endX,
+        endX: endY,
+        endY: boardSize - 1 - startX
+      };
+      break;
+    case 180:
+      newRange = {
+        startX: boardSize - 1 - endX,
+        startY: boardSize - 1 - endY,
+        endX: boardSize - 1 - startX,
+        endY: boardSize - 1 - startY
+      };
+      break;
+    case 270:
+      newRange = {
+        startX: boardSize - 1 - endY,
+        startY: startX,
+        endX: boardSize - 1 - startY,
+        endY: endX
+      };
+      break;
+  }
 
-//   if (startingNode.data.AW) {
-//     startingNode.data.AW.forEach((sgfVertex: string) => {
-//       const vertex = sgfToVertex(sgfVertex);
-//       const transformedVertex = transformVertex(
-//         vertex,
-//         boardSize,
-//         transformation
-//       );
-//       const color = transformation.colorInversion ? 1 : -1;
-//       newBoard = newBoard.makeMove(color, transformedVertex);
-//     });
-//   }
+  // Apply reflection
+  switch (transformation.reflection) {
+    case 'horizontal':
+      newRange = {
+        ...newRange,
+        startY: boardSize - 1 - endY,
+        endY: boardSize - 1 - startY
+      };
+      break;
+    case 'vertical':
+      newRange = {
+        ...newRange,
+        startX: boardSize - 1 - endX,
+        endX: boardSize - 1 - startX
+      };
+      break;
+    case 'diagonal':
+      newRange = {
+        startX: newRange.startY,
+        startY: newRange.startX,
+        endX: newRange.endY,
+        endY: newRange.endX
+      };
+      break;
+  }
 
-//   return newBoard;
-// };
+  return newRange;
+};
 
 export const getRandomTransformation = (): BoardTransformation => {
   const reflections: Reflection[] = [
     'none',
     'horizontal',
     'vertical',
-    'diagonal',
-    'antidiagonal'
+    'diagonal'
   ];
   const rotations: Rotation[] = [0, 90, 180, 270];
 

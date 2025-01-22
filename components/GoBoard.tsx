@@ -16,9 +16,9 @@ interface GoBoardProps {
   range?: BoardRange;
 }
 
-export const GoBoard: React.FC<GoBoardProps> = ({ size, range }) => {
+export const GoBoard: React.FC<GoBoardProps> = () => {
   const { board, currentPlayer, isValidMove } = useGame();
-  const { currentNode } = useGameTree();
+  const { currentNode, boardSize, range } = useGameTree();
   const { handleMove } = useBoardInput();
   const [hoveredIntersection, setHoveredIntersection] =
     useState<Coordinate | null>(null);
@@ -34,7 +34,7 @@ export const GoBoard: React.FC<GoBoardProps> = ({ size, range }) => {
     transformCoordinates,
     getNearestIntersection,
     visibleRange
-  } = useBoardDimensions(size, range);
+  } = useBoardDimensions(boardSize, range);
 
   const { startX, startY, endX, endY } = visibleRange;
 
@@ -77,7 +77,7 @@ export const GoBoard: React.FC<GoBoardProps> = ({ size, range }) => {
     const lines = [];
 
     // Calculate if we need to extend lines
-    const isPartialBoard = endX < size - 1 || endY < size - 1;
+    const isPartialBoard = endX < boardSize - 1 || endY < boardSize - 1;
     const extensionX = isPartialBoard ? LINE_EXTENSION * spacing : 0;
     const extensionY = isPartialBoard ? LINE_EXTENSION * spacing : 0;
 
@@ -91,7 +91,7 @@ export const GoBoard: React.FC<GoBoardProps> = ({ size, range }) => {
           x1={x1}
           y1={Math.max(0, y1 - (startY > 0 ? extensionY : 0))}
           x2={x2}
-          y2={y2 + (endY < size - 1 ? extensionY : 0)}
+          y2={y2 + (endY < boardSize - 1 ? extensionY : 0)}
           stroke='black'
           strokeWidth='1'
         />
@@ -107,7 +107,7 @@ export const GoBoard: React.FC<GoBoardProps> = ({ size, range }) => {
           key={`h${y}`}
           x1={Math.max(0, x1 - (startX > 0 ? extensionX : 0))}
           y1={y1}
-          x2={x2 + (endX < size - 1 ? extensionX : 0)}
+          x2={x2 + (endX < boardSize - 1 ? extensionX : 0)}
           y2={y2}
           stroke='black'
           strokeWidth='1'
@@ -162,7 +162,11 @@ export const GoBoard: React.FC<GoBoardProps> = ({ size, range }) => {
   const renderStarPoints = () => {
     const starPoints = [];
     const starPositions =
-      size === 19 ? [3, 9, 15] : size === 13 ? [3, 6, 9] : [3, size - 4];
+      boardSize === 19
+        ? [3, 9, 15]
+        : boardSize === 13
+        ? [3, 6, 9]
+        : [3, boardSize - 4];
 
     for (const x of starPositions) {
       for (const y of starPositions) {

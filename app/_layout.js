@@ -52,7 +52,7 @@ export default function RootLayout() {
                   tabBarIcon: ({ color }) => (
                     <Icon
                       type='material-community'
-                      name='question'
+                      name='information'
                       color={color}
                     />
                   )

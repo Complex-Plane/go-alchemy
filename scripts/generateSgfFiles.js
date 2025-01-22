@@ -31,6 +31,8 @@ function generateSgfFiles() {
       return `{ 
         uri: require('${relativePath}'),
         name: '${name}',
+        boardSize: 19,
+        range: TOP_RIGHT,
         id: ${index}
       }`;
     });
@@ -42,26 +44,21 @@ function generateSgfFiles() {
   });
 
   // Generate output file content
-  const fileContent = `type Problem = {
-      uri: string;
-      name: string;
-      id: number;
-    };
+  const fileContent = `import {
+  SGFFiles,
+  FULL,
+  TOP_RIGHT,
+  TOP_LEFT,
+  BOTTOM_LEFT,
+  BOTTOM_RIGHT
+} from '@/types/sgf';
 
-    type SGFCategory = {
-      problems: Problem[];
-    };
-
-    type SGFFiles = {
-      [key: string]: SGFCategory;
-    };
-
-    export const SGF_FILES: SGFFiles = {
-      ${Object.entries(sgfFiles)
-        .map(([category, content]) => `${category}: ${content}`)
-        .join(',\n  ')}
-    };
-  `;
+export const SGF_FILES: SGFFiles = {
+  ${Object.entries(sgfFiles)
+    .map(([category, content]) => `${category}: ${content}`)
+    .join(',\n  ')}
+};
+`;
 
   // Ensure output directory exists
   const outputDir = path.dirname(OUTPUT_FILE);

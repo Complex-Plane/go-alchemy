@@ -6,7 +6,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { scheduleNotifications } from '@/services/NotificationService';
 import ToggleTheme from '@/components/ToggleTheme';
 import { useDispatch, useSelector } from 'react-redux';
-import { resetSettings, toggleSfx, toggleHaptics } from '@/store/settingsSlice';
+import {
+  resetSettings,
+  toggleSfx,
+  toggleHaptics,
+  toggleShowCoordinates,
+  toggleRandomizeBoard
+} from '@/store/settingsSlice';
 import ThemedScreen from '@/themes/themedComponents/ThemedScreen';
 import ToggleShowCoordinates from '@/components/ToggleShowCoordinates';
 
@@ -16,6 +22,12 @@ const SettingsScreen = () => {
   const sfxEnabled = useSelector((state) => state.settings?.sfxEnabled ?? true);
   const hapticsEnabled = useSelector(
     (state) => state.settings?.hapticsEnabled ?? true
+  );
+  const randomizeBoard = useSelector(
+    (state) => state.settings?.randomizeBoard ?? true
+  );
+  const showCoordinates = useSelector(
+    (state) => state.settings.showCoordinates
   );
 
   useEffect(() => {
@@ -102,7 +114,20 @@ const SettingsScreen = () => {
           <ListItem.Content>
             <ListItem.Title>Show Board Coordinates</ListItem.Title>
           </ListItem.Content>
-          <ToggleShowCoordinates />
+          <Switch
+            value={showCoordinates}
+            onValueChange={() => dispatch(toggleShowCoordinates())}
+          />
+        </ListItem>
+
+        <ListItem bottomDivider>
+          <ListItem.Content>
+            <ListItem.Title>Randomize Board</ListItem.Title>
+          </ListItem.Content>
+          <Switch
+            value={randomizeBoard}
+            onValueChange={() => dispatch(toggleRandomizeBoard())}
+          />
         </ListItem>
 
         <ListItem bottomDivider>

@@ -3,7 +3,8 @@ import React, {
   useContext,
   useState,
   useCallback,
-  useEffect
+  useEffect,
+  useMemo
 } from 'react';
 const GameTree = require('@sabaki/immutable-gametree');
 const sgf = require('@sabaki/sgf');
@@ -13,14 +14,18 @@ import { Sign, Vertex } from '@sabaki/go-board';
 import { debugLog } from '@/utils/debugLog';
 import { vertexToSgf } from '@/utils/sgfUtils';
 import { processGameTree } from '@/scripts/annotateSgf';
+import { useTransform } from './TransformContext';
+import { SGF_FILES } from '@/constants/sgfFiles';
+import { transformRange } from '@/helper/setupBoard';
+import { BoardRange } from '@/types/board';
 
 export type GameTreeType = typeof GameTree;
 export type GameTreeNode = typeof GameTree.Node;
 
 interface GameTreeProviderProps {
   children: React.ReactNode;
-  category?: string;
-  id?: string | number;
+  category: string;
+  id: string | number;
 }
 
 type GameTreeContextType = {
@@ -42,6 +47,8 @@ type GameTreeContextType = {
     forward: boolean;
     backward: boolean;
   };
+  boardSize: number;
+  range: BoardRange;
 };
 
 const GameTreeContext = createContext<GameTreeContextType | undefined>(
@@ -55,7 +62,7 @@ export const useGameTree = () => {
   return context;
 };
 
-function useGameTreeState(category?: string, id?: string | number) {
+function useGameTreeState(category: string, id: string | number) {
   const [gameTree, setGameTree] = useState<typeof GameTree | null>(null);
   const [currentNode, setCurrentNode] = useState<typeof GameTree.Node | null>(
     null
@@ -63,6 +70,16 @@ function useGameTreeState(category?: string, id?: string | number) {
   const [startingNode, setStartingNode] = useState<GameTreeNode | null>(null);
   const [currentComment, setCurrentComment] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const { transformation, transformComment } = useTransform();
+
+  const idx = typeof id === 'string' ? parseInt(id) : id;
+  const { boardSize, range: originalRange } = SGF_FILES[category].problems[idx];
+
+  const transformedRange = useMemo(
+    () => transformRange(originalRange, transformation, boardSize),
+    [originalRange, transformation, boardSize]
+  );
 
   useEffect(() => {
     debugLog('GameTree', 'Initial mount with category and id:', {
@@ -73,11 +90,11 @@ function useGameTreeState(category?: string, id?: string | number) {
 
   useEffect(() => {
     if (currentNode?.data.C) {
-      setCurrentComment(currentNode.data.C[0]);
+      setCurrentComment(transformComment(currentNode.data.C[0]));
     } else {
       setCurrentComment(null);
     }
-  }, [currentNode]);
+  }, [currentNode, transformComment]);
 
   useEffect(() => {
     if (gameTree && !currentNode) {
@@ -94,10 +111,7 @@ function useGameTreeState(category?: string, id?: string | number) {
         if (category && id) {
           setIsLoading(true);
           // Load sgf from assets by Category/ProblemId
-          const sgfContent = await loadSgfFromAssets(
-            category as string,
-            typeof id === 'string' ? parseInt(id) : id
-          );
+          const sgfContent = await loadSgfFromAssets(category, idx);
           debugLog('GameTree', 'SGF content loaded:', sgfContent);
 
           // Parse sgf to state
@@ -110,7 +124,7 @@ function useGameTreeState(category?: string, id?: string | number) {
           // Add hint labels to tree
           tree = await labelTree(tree);
 
-          debugLog('GameTree', 'Created game tree:', tree);
+          // debugLog('GameTree', 'Created game tree:', tree);
           setGameTree(tree);
 
           // Set startingNode and currentNode to node with {AW, AB, A, B}
@@ -140,7 +154,7 @@ function useGameTreeState(category?: string, id?: string | number) {
           setCurrentNode(setupNode);
           setStartingNode(setupNode);
 
-          debugLog('GameTree', 'Set current node to setupNode:', setupNode);
+          // debugLog('GameTree', 'Set current node to setupNode:', setupNode);
           setIsLoading(false);
         }
       } catch (error) {
@@ -351,7 +365,9 @@ function useGameTreeState(category?: string, id?: string | number) {
     currentComment,
     addMove,
     navigate,
-    canNavigate
+    canNavigate,
+    boardSize,
+    range: transformedRange
   };
 }
 

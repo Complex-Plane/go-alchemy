@@ -15,6 +15,8 @@ import CommentDisplay from '@/components/ui/CommentDisplay';
 import ToggleShowCoordinates from '@/components/ToggleShowCoordinates';
 import { useDispatch } from 'react-redux';
 import { resetShowHint } from '@/store/settingsSlice';
+import { TransformProvider } from '@/contexts/TransformContext';
+import { TransformationPanel } from '@/components/TransformPanel';
 
 export default function ProblemScreen() {
   const { id, category } = useLocalSearchParams();
@@ -34,19 +36,24 @@ export default function ProblemScreen() {
 
   return (
     <ErrorBoundary>
-      <GameTreeProvider category={category as string} id={id as string}>
-        <GameProvider>
-          <SafeAreaView style={styles.container}>
-            <CommentDisplay />
-            <View style={[styles.boardContainer, { height: availableHeight }]}>
-              <GoBoard size={19} range={range} />
-            </View>
-            <ControlPanel />
-            <ToggleShowCoordinates />
-            {/* {__DEV__ && <DebugPanel />} */}
-          </SafeAreaView>
-        </GameProvider>
-      </GameTreeProvider>
+      <TransformProvider>
+        <GameTreeProvider category={category as string} id={id as string}>
+          <GameProvider>
+            <SafeAreaView style={styles.container}>
+              <TransformationPanel />
+              <CommentDisplay />
+              <View
+                style={[styles.boardContainer, { height: availableHeight }]}
+              >
+                <GoBoard size={19} range={range} />
+              </View>
+              <ControlPanel />
+              <ToggleShowCoordinates />
+              {/* {__DEV__ && <DebugPanel />} */}
+            </SafeAreaView>
+          </GameProvider>
+        </GameTreeProvider>
+      </TransformProvider>
     </ErrorBoundary>
   );
 }

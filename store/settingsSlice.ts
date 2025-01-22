@@ -6,6 +6,7 @@ interface SettingsState {
   hapticsEnabled: boolean;
   showHint: boolean;
   showCoordinates: boolean;
+  randomizeBoard: boolean;
 }
 
 const initialState: SettingsState = {
@@ -13,7 +14,8 @@ const initialState: SettingsState = {
   sfxEnabled: true,
   hapticsEnabled: false,
   showHint: false,
-  showCoordinates: true
+  showCoordinates: true,
+  randomizeBoard: false
 };
 
 const settingsSlice = createSlice({
@@ -38,6 +40,9 @@ const settingsSlice = createSlice({
     toggleShowCoordinates: (state) => {
       state.showCoordinates = !state.showCoordinates;
     },
+    toggleRandomizeBoard: (state) => {
+      state.randomizeBoard = !state.randomizeBoard;
+    },
     resetSettings: () => initialState
   }
 });
@@ -49,6 +54,7 @@ export const {
   toggleShowHint,
   resetShowHint,
   toggleShowCoordinates,
+  toggleRandomizeBoard,
   resetSettings
 } = settingsSlice.actions;
 export default settingsSlice.reducer;
