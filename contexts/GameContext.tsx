@@ -56,7 +56,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isInitialized, setIsInitialized] = useState(false);
   const [currentPlayer, setCurrentPlayer] = useState<StoneColor>(1);
   const [playerColor, setPlayerColor] = useState<Sign>(1);
-  const [autoPlayOpponent, setAutoPlayOpponent] = useState(true);
+  const [autoPlayOpponent, setAutoPlayOpponent] = useState(false);
   const [autoPlayDelay, setAutoPlayDelay] = useState(500);
 
   const { transformation } = useTransform();
@@ -169,7 +169,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
       // Make move on original board first
       const newOriginalBoard = originalBoard.makeMove(
         applyColorInversion(currentPlayer),
-        originalVertex
+        originalVertex,
+        {
+          preventSuicide: true,
+          preventOverwrite: true,
+          preventKo: true
+        }
       );
 
       if (newOriginalBoard === null) return false;

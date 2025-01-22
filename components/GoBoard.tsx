@@ -10,6 +10,8 @@ import { useBoardInput } from '@/hooks/useBoardInput';
 import { profilerRender } from '@/utils/profilerUtils';
 import { useGameTree } from '@/contexts/GameTreeContext';
 import { vertexToSgf, sgfToVertex } from '@/utils/sgfUtils';
+import { transformVertex } from '@/helper/setupBoard';
+import { useTransform } from '@/contexts/TransformContext';
 
 interface GoBoardProps {
   size: number;
@@ -19,6 +21,7 @@ interface GoBoardProps {
 export const GoBoard: React.FC<GoBoardProps> = () => {
   const { board, currentPlayer, isValidMove } = useGame();
   const { currentNode, boardSize, range } = useGameTree();
+  const { transformation } = useTransform();
   const { handleMove } = useBoardInput();
   const [hoveredIntersection, setHoveredIntersection] =
     useState<Coordinate | null>(null);
@@ -237,20 +240,21 @@ export const GoBoard: React.FC<GoBoardProps> = () => {
   const renderHints = () => {
     if (!showHint || !currentNode?.data.LB) return null;
 
-    const hints = [];
+    const hints: React.ReactElement[] = [];
     const labels = currentNode.data.LB;
 
     labels.forEach((label: string) => {
       const [coordinate, type] = label.split(':');
       const [x, y] = sgfToVertex(coordinate);
+      const [tx, ty] = transformVertex([x, y], transformation, boardSize);
 
-      if (x >= startX && x <= endX && y >= startY && y <= endY) {
-        const [cx, cy] = transformCoordinates(x, y);
+      if (tx >= startX && tx <= endX && ty >= startY && ty <= endY) {
+        const [cx, cy] = transformCoordinates(tx, ty);
         const color = type === 'o' ? 'green' : type === 'x' ? 'red' : null;
         if (color) {
           hints.push(
             <Circle
-              key={`hint-${x}-${y}`}
+              key={`hint-${tx}-${ty}`}
               cx={cx}
               cy={cy}
               r={spacing * 0.2}

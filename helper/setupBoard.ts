@@ -56,7 +56,7 @@ export const setUpBoard = (
   return newBoard;
 };
 
-const transformVertex = (
+export const transformVertex = (
   vertex: Vertex,
   transformation: BoardTransformation,
   boardSize: number

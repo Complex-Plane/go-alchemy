@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, Image, Linking, ScrollView } from 'react-native';
+import Constants from 'expo-constants';
 import { makeStyles } from '@rneui/themed';
 import { Button } from '@rneui/base';
-import { version } from '@/package.json';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import ThemedScreen from '@/themes/themedComponents/ThemedScreen';
 const logo = require('@/assets/images/screen_logo.png');
@@ -26,12 +26,16 @@ const AboutScreen = () => {
       >
         <View style={styles.logoContainer}>
           <Image source={logo} style={styles.logo} resizeMode='contain' />
-          <Text style={styles.appName}>Kiwi Cards</Text>
-          <Text style={styles.version}>Version {version}</Text>
+          <Text style={styles.appName}>{Constants.expoConfig.name}</Text>
+          <Text style={styles.version}>
+            Version {Constants.expoConfig.version}
+          </Text>
         </View>
 
         <View style={styles.infoContainer}>
-          <Text style={styles.description}>A fun app for learning! </Text>
+          <Text style={styles.description}>
+            {Constants.expoConfig.description}
+          </Text>
 
           <View style={styles.divider} />
 
