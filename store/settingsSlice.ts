@@ -32,6 +32,9 @@ const settingsSlice = createSlice({
     toggleShowHint: (state) => {
       state.showHint = !state.showHint;
     },
+    resetShowHint: (state) => {
+      state.showHint = false;
+    },
     toggleShowCoordinates: (state) => {
       state.showCoordinates = !state.showCoordinates;
     },
@@ -44,6 +47,7 @@ export const {
   toggleSfx,
   toggleHaptics,
   toggleShowHint,
+  resetShowHint,
   toggleShowCoordinates,
   resetSettings
 } = settingsSlice.actions;

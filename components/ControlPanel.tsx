@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Button } from '@rneui/themed';
 import { useGameTree } from '@/contexts/GameTreeContext';
+import ToggleShowHint from './ToggleShowHint';
 
 export const ControlPanel: React.FC = () => {
   const { navigate, canNavigate } = useGameTree();
@@ -26,6 +27,7 @@ export const ControlPanel: React.FC = () => {
           disabled={!canNavigate?.forward}
           type='clear'
         />
+        <ToggleShowHint />
         <Button
           icon={{ name: 'fast-forward', color: 'white' }}
           onPress={navigate.last}

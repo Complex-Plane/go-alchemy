@@ -8,6 +8,7 @@ import ToggleTheme from '@/components/ToggleTheme';
 import { useDispatch, useSelector } from 'react-redux';
 import { resetSettings, toggleSfx, toggleHaptics } from '@/store/settingsSlice';
 import ThemedScreen from '@/themes/themedComponents/ThemedScreen';
+import ToggleShowCoordinates from '@/components/ToggleShowCoordinates';
 
 const SettingsScreen = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
@@ -95,6 +96,13 @@ const SettingsScreen = () => {
             value={hapticsEnabled}
             onValueChange={() => dispatch(toggleHaptics())}
           />
+        </ListItem>
+
+        <ListItem bottomDivider>
+          <ListItem.Content>
+            <ListItem.Title>Show Board Coordinates</ListItem.Title>
+          </ListItem.Content>
+          <ToggleShowCoordinates />
         </ListItem>
 
         <ListItem bottomDivider>

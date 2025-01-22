@@ -12,11 +12,17 @@ import { GameProvider } from '@/contexts/GameContext';
 import { useLocalSearchParams } from 'expo-router';
 import { GameTreeProvider } from '@/contexts/GameTreeContext';
 import CommentDisplay from '@/components/ui/CommentDisplay';
-import ToggleShowHint from '@/components/ToggleShowHint';
 import ToggleShowCoordinates from '@/components/ToggleShowCoordinates';
+import { useDispatch } from 'react-redux';
+import { resetShowHint } from '@/store/settingsSlice';
 
 export default function ProblemScreen() {
   const { id, category } = useLocalSearchParams();
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(resetShowHint());
+  }, [id, , category]);
 
   const { height: windowHeight } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -36,7 +42,6 @@ export default function ProblemScreen() {
               <GoBoard size={19} range={range} />
             </View>
             <ControlPanel />
-            <ToggleShowHint />
             <ToggleShowCoordinates />
             {/* {__DEV__ && <DebugPanel />} */}
           </SafeAreaView>
