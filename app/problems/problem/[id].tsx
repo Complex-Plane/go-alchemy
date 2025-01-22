@@ -30,7 +30,7 @@ export default function ProblemScreen() {
   const availableHeight =
     windowHeight - insets.top - insets.bottom - CONTROL_PANEL_HEIGHT;
 
-  const range = { startX: 9, startY: 0, endX: 18, endY: 9 };
+  const range = { startX: 0, startY: 0, endX: 18, endY: 18 };
 
   return (
     <ErrorBoundary>

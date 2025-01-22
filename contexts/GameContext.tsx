@@ -10,6 +10,13 @@ import { Vertex, Sign } from '@sabaki/go-board';
 import { sgfToVertex } from '@/utils/sgfUtils';
 import { debugLog } from '@/utils/debugLog';
 import { GameTreeNode, useGameTree } from './GameTreeContext';
+import {
+  applyTransformation,
+  BoardTransformation,
+  getRandomTransformation,
+  invertTransformation,
+  setUpBoard
+} from '@/helper/setupBoard';
 
 // Types that match @sabaki/go-board
 type BoardState = Sign[][];
@@ -46,11 +53,18 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const boardSize = 19;
   const [isInitialized, setIsInitialized] = useState(false);
-  const [board, setBoard] = useState(() => Board.fromDimensions(boardSize));
   const [currentPlayer, setCurrentPlayer] = useState<StoneColor>(1);
   const [playerColor, setPlayerColor] = useState<Sign>(1);
   const [autoPlayOpponent, setAutoPlayOpponent] = useState(true);
   const [autoPlayDelay, setAutoPlayDelay] = useState(500);
+
+  const [transformation, setTransformation] = useState<BoardTransformation>(
+    getRandomTransformation()
+  );
+  const [board, setBoard] = useState(() => Board.fromDimensions(boardSize));
+  const [originalBoard, setOriginalBoard] = useState(() =>
+    Board.fromDimensions(boardSize)
+  );
 
   const { gameTree, currentNode, startingNode, addMove, setCurrentNode } =
     useGameTree();
@@ -58,87 +72,73 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
   // Initial setup effect
   useEffect(() => {
     if (gameTree && !isInitialized) {
-      debugLog('GameContext', 'Performing initial board setup');
-      let newBoard = Board.fromDimensions(boardSize);
+      debugLog('GameContext', 'Performing initial board setup', transformation);
 
-      // Add initial setup moves
-      if (startingNode.data.AB) {
-        startingNode.data.AB.forEach((sgfVertex: string) => {
-          const vertex: Vertex = sgfToVertex(sgfVertex);
-          newBoard = newBoard.makeMove(1, vertex);
-        });
-      }
-
-      if (startingNode.data.AW) {
-        startingNode.data.AW.forEach((sgfVertex: string) => {
-          const vertex: Vertex = sgfToVertex(sgfVertex);
-          newBoard = newBoard.makeMove(-1, vertex);
-        });
-      }
-
-      setBoard(newBoard);
+      const newBoard = setUpBoard(startingNode, boardSize);
+      setOriginalBoard(newBoard);
+      setBoard(applyTransformation(newBoard, transformation, boardSize));
       setIsInitialized(true);
     }
-  }, [gameTree, isInitialized]);
+  }, [gameTree, isInitialized, transformation]);
 
   // Board syncing effect
-  useEffect(() => {
-    if (gameTree && currentNode && isInitialized) {
-      debugLog('GameContext', 'Syncing board with currentNode:');
-      let newBoard = Board.fromDimensions(boardSize);
+  // useEffect(() => {
+  //   if (gameTree && currentNode && isInitialized) {
+  //     debugLog('GameContext', 'Syncing board with currentNode:');
+  //     let newBoard = Board.fromDimensions(boardSize);
 
-      // Find the setup node first
-      const rootNode = gameTree.root;
-      let setupNode = rootNode;
-      while (!setupNode.data.AW && !setupNode.data.AB) {
-        if (setupNode.children.length > 0) {
-          setupNode = setupNode.children[0];
-        } else {
-          break;
-        }
-      }
+  //     // Find the setup node first
+  //     const rootNode = gameTree.root;
+  //     let setupNode = rootNode;
+  //     while (!setupNode.data.AW && !setupNode.data.AB) {
+  //       if (setupNode.children.length > 0) {
+  //         setupNode = setupNode.children[0];
+  //       } else {
+  //         break;
+  //       }
+  //     }
 
-      // Replay setup moves
-      if (setupNode.data.AB) {
-        setupNode.data.AB.forEach((sgfVertex: string) => {
-          const vertex: Vertex = sgfToVertex(sgfVertex);
-          newBoard = newBoard.makeMove(1, vertex);
-        });
-      }
+  //     // Replay setup moves
+  //     if (setupNode.data.AB) {
+  //       setupNode.data.AB.forEach((sgfVertex: string) => {
+  //         const vertex: Vertex = sgfToVertex(sgfVertex);
+  //         newBoard = newBoard.makeMove(1, vertex);
+  //       });
+  //     }
 
-      if (setupNode.data.AW) {
-        setupNode.data.AW.forEach((sgfVertex: string) => {
-          const vertex: Vertex = sgfToVertex(sgfVertex);
-          newBoard = newBoard.makeMove(-1, vertex);
-        });
-      }
+  //     if (setupNode.data.AW) {
+  //       setupNode.data.AW.forEach((sgfVertex: string) => {
+  //         const vertex: Vertex = sgfToVertex(sgfVertex);
+  //         newBoard = newBoard.makeMove(-1, vertex);
+  //       });
+  //     }
 
-      // Then process moves from setup node to current node
-      const moveHistory = [];
-      let node = currentNode;
-      while (node.id !== setupNode.id && node.parentId) {
-        moveHistory.unshift(node);
-        node = gameTree.get(node.parentId);
-      }
+  //     // Then process moves from setup node to current node
+  //     const moveHistory = [];
+  //     let node = currentNode;
+  //     while (node.id !== setupNode.id && node.parentId) {
+  //       moveHistory.unshift(node);
+  //       node = gameTree.get(node.parentId);
+  //     }
 
-      // Replay moves
-      moveHistory.forEach((node) => {
-        if (node.data.B) {
-          setCurrentPlayer(-1 as Sign);
-          const sgfVertex = node.data.B[0];
-          const vertex: Vertex = sgfToVertex(sgfVertex);
-          newBoard = newBoard.makeMove(1, vertex);
-        } else if (node.data.W) {
-          setCurrentPlayer(-1 as Sign);
-          const sgfVertex = node.data.W[0];
-          const vertex: Vertex = sgfToVertex(sgfVertex);
-          newBoard = newBoard.makeMove(-1, vertex);
-        }
-      });
+  //     // Replay moves
+  //     moveHistory.forEach((node) => {
+  //       if (node.data.B) {
+  //         setCurrentPlayer(-1 as Sign);
+  //         const sgfVertex = node.data.B[0];
+  //         const vertex: Vertex = sgfToVertex(sgfVertex);
+  //         newBoard = newBoard.makeMove(1, vertex);
+  //       } else if (node.data.W) {
+  //         setCurrentPlayer(-1 as Sign);
+  //         const sgfVertex = node.data.W[0];
+  //         const vertex: Vertex = sgfToVertex(sgfVertex);
+  //         newBoard = newBoard.makeMove(-1, vertex);
+  //       }
+  //     });
 
-      setBoard(newBoard);
-    }
-  }, [gameTree, currentNode, isInitialized]);
+  //     setBoard(newBoard);
+  //   }
+  // }, [gameTree, currentNode, isInitialized]);
 
   // Sync player color with current node
   useEffect(() => {
@@ -211,6 +211,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
         // TODO: fix
         // await playOpponentMove();
       }
+
       setBoard(newBoard);
       setCurrentPlayer((prev) => (prev === 1 ? -1 : 1));
       return true;
