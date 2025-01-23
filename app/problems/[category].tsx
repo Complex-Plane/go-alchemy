@@ -39,7 +39,7 @@ export default function ProblemList() {
       const handlePress = () => {
         router.push({
           pathname: '/problems/problem/[id]',
-          params: { id: item.id, category }
+          params: { id: item.id, count: problems.length, category }
         });
       };
 
@@ -55,7 +55,7 @@ export default function ProblemList() {
             />
           </View>
           <Text style={styles.name} numberOfLines={1}>
-            {item.name}
+            # {item.id + 1}
           </Text>
         </TouchableOpacity>
       );
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   },
   name: {
     marginTop: 4,
-    fontSize: 12,
+    fontSize: 14,
     textAlign: 'center'
   }
 });

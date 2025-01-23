@@ -16,7 +16,9 @@ export default function ProblemsLayout() {
       <Stack.Screen
         name='problem/[id]'
         options={({ route }) => ({
-          title: `${capitalizeWord(route.params.category)}`
+          title: `${capitalizeWord(route.params.category)} # ${
+            parseInt(route.params.id) + 1
+          }`
         })}
         // options={({ route }) => ({
         //   header: () => {

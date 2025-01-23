@@ -21,7 +21,7 @@ import { TransformationPanel } from '@/components/TransformPanel';
 // Route: '/problems/problem/[id]'
 
 export default function ProblemScreen() {
-  const { id, category } = useLocalSearchParams();
+  const { id, count, category } = useLocalSearchParams();
   const dispatch = useDispatch();
 
   useEffect(() => {
