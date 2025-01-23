@@ -15,7 +15,7 @@ import { debugLog } from '@/utils/debugLog';
 import { vertexToSgf } from '@/utils/sgfUtils';
 import { processGameTree } from '@/scripts/annotateSgf';
 import { useTransform } from './TransformContext';
-import { SGF_FILES } from '@/constants/sgfFiles';
+import { SGF_FILES } from '@/assets/sgf';
 import { transformRange } from '@/helper/setupBoard';
 import { BoardRange } from '@/types/board';
 

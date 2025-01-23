@@ -2,6 +2,7 @@ import { BoardRange } from './board';
 
 export type Problem = {
   uri: string;
+  image: string;
   name: string;
   boardSize: number;
   range: BoardRange;

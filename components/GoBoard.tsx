@@ -13,12 +13,7 @@ import { vertexToSgf, sgfToVertex } from '@/utils/sgfUtils';
 import { transformVertex } from '@/helper/setupBoard';
 import { useTransform } from '@/contexts/TransformContext';
 
-interface GoBoardProps {
-  size: number;
-  range?: BoardRange;
-}
-
-export const GoBoard: React.FC<GoBoardProps> = () => {
+export const GoBoard: React.FC = () => {
   const { board, currentPlayer, isValidMove } = useGame();
   const { currentNode, boardSize, range } = useGameTree();
   const { transformation } = useTransform();
@@ -442,7 +437,6 @@ export const GoBoard: React.FC<GoBoardProps> = () => {
           {renderStones()}
           {renderHints()}
           {renderGhostStone()}
-          {/* {renderCoordinates()} */}
           {renderColumnLabels()}
           {renderRowLabels()}
         </G>

@@ -13,7 +13,7 @@ export default function RootLayout() {
       <PersistGate loading={<Loading />} persistor={persistor}>
         <ThemeWrapper>
           <SafeAreaProvider>
-            <Tabs>
+            <Tabs screenOptions={{ headerShown: false }}>
               <Tabs.Screen
                 name='index'
                 options={{
@@ -27,6 +27,7 @@ export default function RootLayout() {
                 name='problems'
                 options={{
                   title: 'Problems',
+                  headerShown: false,
                   tabBarIcon: ({ color }) => (
                     <Icon
                       type='material-community'

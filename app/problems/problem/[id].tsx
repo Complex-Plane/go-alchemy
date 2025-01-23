@@ -32,8 +32,6 @@ export default function ProblemScreen() {
   const availableHeight =
     windowHeight - insets.top - insets.bottom - CONTROL_PANEL_HEIGHT;
 
-  const range = { startX: 0, startY: 0, endX: 18, endY: 18 };
-
   return (
     <ErrorBoundary>
       <TransformProvider>
@@ -42,13 +40,11 @@ export default function ProblemScreen() {
             <SafeAreaView style={styles.container}>
               <TransformationPanel />
               <CommentDisplay />
-              <View
-                style={[styles.boardContainer, { height: availableHeight }]}
-              >
-                <GoBoard size={19} range={range} />
+              <View style={[styles.boardContainer]}>
+                <GoBoard />
               </View>
               <ControlPanel />
-              <ToggleShowCoordinates />
+              {/* <ToggleShowCoordinates /> */}
               {/* {__DEV__ && <DebugPanel />} */}
             </SafeAreaView>
           </GameProvider>
@@ -60,13 +56,11 @@ export default function ProblemScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#fff'
+    flex: 1
   },
   boardContainer: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#E6BA7A'
+    alignItems: 'center'
   }
 });

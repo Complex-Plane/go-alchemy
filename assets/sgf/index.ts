@@ -11,7 +11,8 @@ export const SGF_FILES: SGFFiles = {
   joseki: {
     problems: [
       {
-        uri: require('../assets/sgf/joseki/problem001.sgf'),
+        uri: require('./joseki/problem001.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem001',
         boardSize: 19,
         range: TOP_RIGHT,
@@ -22,7 +23,8 @@ export const SGF_FILES: SGFFiles = {
   opening: {
     problems: [
       {
-        uri: require('../assets/sgf/opening/problem001.sgf'),
+        uri: require('./opening/problem001.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem001',
         boardSize: 19,
         range: TOP_RIGHT,
@@ -33,7 +35,8 @@ export const SGF_FILES: SGFFiles = {
   sabaki: {
     problems: [
       {
-        uri: require('../assets/sgf/sabaki/problem001.sgf'),
+        uri: require('./sabaki/problem001.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem001',
         boardSize: 19,
         range: TOP_RIGHT,
@@ -44,154 +47,176 @@ export const SGF_FILES: SGFFiles = {
   shape: {
     problems: [
       {
-        uri: require('../assets/sgf/shape/problem001.sgf'),
+        uri: require('./shape/problem001.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem001',
         boardSize: 19,
         range: TOP_RIGHT,
         id: 0
       },
       {
-        uri: require('../assets/sgf/shape/problem002.sgf'),
+        uri: require('./shape/problem002.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem002',
         boardSize: 19,
         range: TOP_RIGHT,
         id: 1
       },
       {
-        uri: require('../assets/sgf/shape/problem003.sgf'),
+        uri: require('./shape/problem003.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem003',
         boardSize: 19,
         range: TOP_RIGHT,
         id: 2
       },
       {
-        uri: require('../assets/sgf/shape/problem004.sgf'),
+        uri: require('./shape/problem004.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem004',
         boardSize: 19,
         range: TOP_RIGHT,
         id: 3
       },
       {
-        uri: require('../assets/sgf/shape/problem005.sgf'),
+        uri: require('./shape/problem005.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem005',
         boardSize: 19,
         range: TOP_RIGHT,
         id: 4
       },
       {
-        uri: require('../assets/sgf/shape/problem006.sgf'),
+        uri: require('./shape/problem006.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem006',
         boardSize: 19,
         range: TOP_RIGHT,
         id: 5
       },
       {
-        uri: require('../assets/sgf/shape/problem007.sgf'),
+        uri: require('./shape/problem007.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem007',
         boardSize: 19,
         range: TOP_RIGHT,
         id: 6
       },
       {
-        uri: require('../assets/sgf/shape/problem008.sgf'),
+        uri: require('./shape/problem008.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem008',
         boardSize: 19,
         range: TOP_RIGHT,
         id: 7
       },
       {
-        uri: require('../assets/sgf/shape/problem009.sgf'),
+        uri: require('./shape/problem009.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem009',
         boardSize: 19,
         range: TOP_RIGHT,
         id: 8
       },
       {
-        uri: require('../assets/sgf/shape/problem010.sgf'),
+        uri: require('./shape/problem010.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem010',
         boardSize: 19,
         range: TOP_RIGHT,
         id: 9
       },
       {
-        uri: require('../assets/sgf/shape/problem011.sgf'),
+        uri: require('./shape/problem011.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem011',
         boardSize: 19,
         range: TOP_RIGHT,
         id: 10
       },
       {
-        uri: require('../assets/sgf/shape/problem012.sgf'),
+        uri: require('./shape/problem012.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem012',
         boardSize: 19,
         range: TOP_RIGHT,
         id: 11
       },
       {
-        uri: require('../assets/sgf/shape/problem013.sgf'),
+        uri: require('./shape/problem013.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem013',
         boardSize: 19,
         range: TOP_RIGHT,
         id: 12
       },
       {
-        uri: require('../assets/sgf/shape/problem014.sgf'),
+        uri: require('./shape/problem014.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem014',
         boardSize: 19,
         range: TOP_RIGHT,
         id: 13
       },
       {
-        uri: require('../assets/sgf/shape/problem015.sgf'),
+        uri: require('./shape/problem015.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem015',
         boardSize: 19,
         range: TOP_RIGHT,
         id: 14
       },
       {
-        uri: require('../assets/sgf/shape/problem016.sgf'),
+        uri: require('./shape/problem016.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem016',
         boardSize: 19,
         range: TOP_RIGHT,
         id: 15
       },
       {
-        uri: require('../assets/sgf/shape/problem017.sgf'),
+        uri: require('./shape/problem017.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem017',
         boardSize: 19,
         range: TOP_RIGHT,
         id: 16
       },
       {
-        uri: require('../assets/sgf/shape/problem018.sgf'),
+        uri: require('./shape/problem018.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem018',
         boardSize: 19,
         range: TOP_RIGHT,
         id: 17
       },
       {
-        uri: require('../assets/sgf/shape/problem019.sgf'),
+        uri: require('./shape/problem019.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem019',
         boardSize: 19,
         range: TOP_RIGHT,
         id: 18
       },
       {
-        uri: require('../assets/sgf/shape/problem020.sgf'),
+        uri: require('./shape/problem020.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem020',
         boardSize: 19,
         range: TOP_RIGHT,
         id: 19
       },
       {
-        uri: require('../assets/sgf/shape/problem021.sgf'),
+        uri: require('./shape/problem021.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem021',
         boardSize: 19,
         range: TOP_RIGHT,
         id: 20
       },
       {
-        uri: require('../assets/sgf/shape/problem022.sgf'),
+        uri: require('./shape/problem022.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem022',
         boardSize: 19,
         range: TOP_RIGHT,
@@ -202,14 +227,16 @@ export const SGF_FILES: SGFFiles = {
   tesuji: {
     problems: [
       {
-        uri: require('../assets/sgf/tesuji/problem001.sgf'),
+        uri: require('./tesuji/problem001.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem001',
         boardSize: 19,
         range: TOP_LEFT,
         id: 0
       },
       {
-        uri: require('../assets/sgf/tesuji/problem002.sgf'),
+        uri: require('./tesuji/problem002.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem002',
         boardSize: 19,
         range: FULL,
@@ -220,7 +247,8 @@ export const SGF_FILES: SGFFiles = {
   tsumego: {
     problems: [
       {
-        uri: require('../assets/sgf/tsumego/problem001.sgf'),
+        uri: require('./tsumego/problem001.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem001',
         boardSize: 19,
         range: TOP_RIGHT,

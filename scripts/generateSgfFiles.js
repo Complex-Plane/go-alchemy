@@ -4,7 +4,7 @@ const path = require('path');
 // Path to SGF assets folder
 const SGF_DIR = './assets/sgf';
 // Output file path
-const OUTPUT_FILE = './constants/sgfFiles.ts';
+const OUTPUT_FILE = './assets/sgf/index.ts';
 
 function generateSgfFiles() {
   // Create result object
@@ -24,12 +24,16 @@ function generateSgfFiles() {
 
     // Create problems array with require statements
     const problems = files.map((file, index) => {
-      const relativePath = path
-        .join('../assets/sgf', directory, file)
-        .replace(/\\/g, '/');
+      const relativePath =
+        './' + path.join(directory, file).replace(/\\/g, '/');
       const name = file.replace('.sgf', '');
+      // const imagePath = path
+      //   .join('../images', directory, name, '.jpg')
+      //   .replace(/\\/g, '/');
+      const imagePath = '../images/tesuji_thumbnail.jpg';
       return `{ 
         uri: require('${relativePath}'),
+        image: require('${imagePath}'),
         name: '${name}',
         boardSize: 19,
         range: TOP_RIGHT,
