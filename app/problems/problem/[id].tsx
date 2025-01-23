@@ -18,6 +18,8 @@ import { resetShowHint } from '@/store/settingsSlice';
 import { TransformProvider } from '@/contexts/TransformContext';
 import { TransformationPanel } from '@/components/TransformPanel';
 
+// Route: '/problems/problem/[id]'
+
 export default function ProblemScreen() {
   const { id, category } = useLocalSearchParams();
   const dispatch = useDispatch();

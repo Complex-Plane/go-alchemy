@@ -20,19 +20,28 @@ export const GoBoard: React.FC = () => {
   const { handleMove } = useBoardInput();
   const [hoveredIntersection, setHoveredIntersection] =
     useState<Coordinate | null>(null);
+  const [containerHeight, setContainerHeight] = useState<number>(500);
 
-  const showHint = useSelector((state: RootState) => state.settings.showHint);
-  const showCoordinates = useSelector(
+  const showHint: boolean = useSelector(
+    (state: RootState) => state.settings.showHint
+  );
+  const showCoordinates: boolean = useSelector(
     (state: RootState) => state.settings.showCoordinates
   );
 
   const {
     spacing,
-    actualBoardSize,
+    actualBoardWidth,
+    actualBoardHeight,
     transformCoordinates,
     getNearestIntersection,
     visibleRange
-  } = useBoardDimensions(boardSize, range);
+  } = useBoardDimensions({
+    boardSize,
+    range,
+    containerHeight,
+    showCoordinates
+  });
 
   const { startX, startY, endX, endY } = visibleRange;
 
@@ -95,6 +104,21 @@ export const GoBoard: React.FC = () => {
         />
       );
     }
+    // for (let x = startX; x <= endX; x++) {
+    //   const [x1, y1] = transformCoordinates(x, startY);
+    //   const [x2, y2] = transformCoordinates(x, endY);
+    //   lines.push(
+    //     <Line
+    //       key={`v${x}`}
+    //       x1={x1}
+    //       y1={y1}
+    //       x2={x2}
+    //       y2={y2}
+    //       stroke='black'
+    //       strokeWidth='1'
+    //     />
+    //   );
+    // }
 
     // Horizontal lines
     for (let y = startY; y <= endY; y++) {
@@ -193,7 +217,7 @@ export const GoBoard: React.FC = () => {
           x1={hx}
           y1={0}
           x2={hx}
-          y2={actualBoardSize}
+          y2={actualBoardHeight}
           stroke={color}
           strokeWidth='2'
           opacity='0.5'
@@ -201,7 +225,7 @@ export const GoBoard: React.FC = () => {
         <Line
           x1={0}
           y1={hy}
-          x2={actualBoardSize}
+          x2={actualBoardWidth}
           y2={hy}
           stroke={color}
           strokeWidth='2'
@@ -268,18 +292,19 @@ export const GoBoard: React.FC = () => {
     if (!showCoordinates) return null;
 
     const labels = [];
-    const yTop = -spacing * 0.2; // Above the board
-    const yBottom = actualBoardSize + spacing * 0.2; // Below the board
+    const labelOffset = spacing * 0.75;
 
     for (let x = startX; x <= endX; x++) {
-      const [cx] = transformCoordinates(x, 0);
+      const [cx] = transformCoordinates(x, startY);
+      const [_, topY] = transformCoordinates(startX, startY);
+      const [__, bottomY] = transformCoordinates(startX, endY);
       const label = getColumnLabel(x);
 
       labels.push(
         <SvgText
           key={`top-${x}`}
           x={cx}
-          y={yTop}
+          y={topY - labelOffset}
           textAnchor='middle'
           fill='black'
           fontSize={spacing * 0.5}
@@ -289,7 +314,7 @@ export const GoBoard: React.FC = () => {
         <SvgText
           key={`bottom-${x}`}
           x={cx}
-          y={yBottom}
+          y={bottomY + labelOffset}
           textAnchor='middle'
           fill='black'
           fontSize={spacing * 0.5}
@@ -307,7 +332,7 @@ export const GoBoard: React.FC = () => {
 
     const labels = [];
     const xLeft = -spacing * 0.2; // Left of the board
-    const xRight = actualBoardSize + spacing * 0.2; // Right of the board
+    const xRight = actualBoardWidth + spacing * 0.2; // Right of the board
 
     for (let y = startY; y <= endY; y++) {
       const [, cy] = transformCoordinates(0, y);
@@ -416,12 +441,15 @@ export const GoBoard: React.FC = () => {
     <View
       style={[
         styles.container,
-        { width: actualBoardSize, height: actualBoardSize }
+        { width: actualBoardWidth, height: actualBoardHeight }
       ]}
+      onLayout={(event) => {
+        setContainerHeight(event.nativeEvent.layout.height);
+      }}
     >
       <Svg
-        width={actualBoardSize}
-        height={actualBoardSize}
+        width={actualBoardWidth}
+        height={actualBoardHeight}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -448,7 +476,6 @@ export const GoBoard: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#E6BA7A'
