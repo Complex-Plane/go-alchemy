@@ -26,13 +26,24 @@ export default function ProblemScreen() {
 
   useEffect(() => {
     dispatch(resetShowHint());
-  }, [id, , category]);
+  }, [id, category]);
 
-  const { height: windowHeight } = useWindowDimensions();
+  const { height: windowHeight, width: windowWidth } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+
+  // Calculate fixed heights
   const CONTROL_PANEL_HEIGHT = 70;
+  const COMMENT_DISPLAY_HEIGHT = 70;
+
+  // Calculate available space for board
   const availableHeight =
-    windowHeight - insets.top - insets.bottom - CONTROL_PANEL_HEIGHT;
+    windowHeight -
+    insets.top -
+    insets.bottom -
+    CONTROL_PANEL_HEIGHT -
+    COMMENT_DISPLAY_HEIGHT;
+
+  const availableWidth = windowWidth - insets.left - insets.right;
 
   return (
     <ErrorBoundary>
@@ -42,8 +53,16 @@ export default function ProblemScreen() {
             <SafeAreaView style={styles.container}>
               <TransformationPanel />
               <CommentDisplay />
-              <View style={[styles.boardContainer]}>
-                <GoBoard />
+              <View
+                style={[
+                  styles.boardContainer,
+                  { height: availableHeight, width: availableWidth }
+                ]}
+              >
+                <GoBoard
+                  availableWidth={availableWidth}
+                  availableHeight={availableHeight}
+                />
               </View>
               <ControlPanel />
               {/* <ToggleShowCoordinates /> */}
@@ -63,6 +82,9 @@ const styles = StyleSheet.create({
   boardContainer: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    backgroundColor: 'lightblue',
+    borderColor: 'black',
+    borderWidth: 1
   }
 });

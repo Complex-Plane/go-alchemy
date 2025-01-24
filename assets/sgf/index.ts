@@ -4,7 +4,11 @@ import {
   TOP_RIGHT,
   TOP_LEFT,
   BOTTOM_LEFT,
-  BOTTOM_RIGHT
+  BOTTOM_RIGHT,
+  LEFT,
+  RIGHT,
+  TOP,
+  BOTTOM
 } from '@/types/sgf';
 
 export const SGF_FILES: SGFFiles = {
@@ -27,8 +31,16 @@ export const SGF_FILES: SGFFiles = {
         image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem001',
         boardSize: 19,
-        range: TOP_RIGHT,
+        range: FULL,
         id: 0
+      },
+      {
+        uri: require('./opening/problem002.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
+        name: 'problem002',
+        boardSize: 19,
+        range: FULL,
+        id: 1
       }
     ]
   },
@@ -39,8 +51,16 @@ export const SGF_FILES: SGFFiles = {
         image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem001',
         boardSize: 19,
-        range: TOP_RIGHT,
+        range: FULL,
         id: 0
+      },
+      {
+        uri: require('./sabaki/problem002.sgf'),
+        image: require('../images/tesuji_thumbnail.jpg'),
+        name: 'problem002',
+        boardSize: 19,
+        range: RIGHT,
+        id: 1
       }
     ]
   },
@@ -251,7 +271,7 @@ export const SGF_FILES: SGFFiles = {
         image: require('../images/tesuji_thumbnail.jpg'),
         name: 'problem001',
         boardSize: 19,
-        range: TOP_RIGHT,
+        range: TOP_LEFT,
         id: 0
       }
     ]

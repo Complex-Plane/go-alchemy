@@ -15,7 +15,8 @@ const CommentDisplay = () => {
 
 const useStyles = makeStyles((theme) => ({
   container: {
-    height: 70
+    height: 70,
+    marginHorizontal: 10
   },
   comment: {
     fontSize: 20,

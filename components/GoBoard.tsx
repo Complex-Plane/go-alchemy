@@ -13,14 +13,21 @@ import { vertexToSgf, sgfToVertex } from '@/utils/sgfUtils';
 import { transformVertex } from '@/helper/setupBoard';
 import { useTransform } from '@/contexts/TransformContext';
 
-export const GoBoard: React.FC = () => {
+type GoBoardProps = {
+  availableWidth: number;
+  availableHeight: number;
+};
+
+export const GoBoard: React.FC<GoBoardProps> = ({
+  availableWidth,
+  availableHeight
+}) => {
   const { board, currentPlayer, isValidMove } = useGame();
   const { currentNode, boardSize, range } = useGameTree();
   const { transformation } = useTransform();
   const { handleMove } = useBoardInput();
   const [hoveredIntersection, setHoveredIntersection] =
     useState<Coordinate | null>(null);
-  const [containerHeight, setContainerHeight] = useState<number>(500);
 
   const showHint: boolean = useSelector(
     (state: RootState) => state.settings.showHint
@@ -31,19 +38,16 @@ export const GoBoard: React.FC = () => {
 
   const {
     spacing,
-    actualBoardWidth,
-    actualBoardHeight,
+    totalBoardWidth,
+    totalBoardHeight,
     transformCoordinates,
-    getNearestIntersection,
-    visibleRange
+    getNearestIntersection
   } = useBoardDimensions({
-    boardSize,
     range,
-    containerHeight,
+    availableWidth,
+    availableHeight,
     showCoordinates
   });
-
-  const { startX, startY, endX, endY } = visibleRange;
 
   const handleIntersectionHover = (x: number, y: number) => {
     const intersection = getNearestIntersection(x, y);
@@ -84,52 +88,38 @@ export const GoBoard: React.FC = () => {
     const lines = [];
 
     // Calculate if we need to extend lines
-    const isPartialBoard = endX < boardSize - 1 || endY < boardSize - 1;
+    const isPartialBoard =
+      range.endX < boardSize - 1 || range.endY < boardSize - 1;
     const extensionX = isPartialBoard ? LINE_EXTENSION * spacing : 0;
     const extensionY = isPartialBoard ? LINE_EXTENSION * spacing : 0;
 
     // Vertical lines
-    for (let x = startX; x <= endX; x++) {
-      const [x1, y1] = transformCoordinates(x, startY);
-      const [x2, y2] = transformCoordinates(x, endY);
+    for (let x = range.startX; x <= range.endX; x++) {
+      const [x1, y1] = transformCoordinates(x, range.startY);
+      const [x2, y2] = transformCoordinates(x, range.endY);
       lines.push(
         <Line
           key={`v${x}`}
           x1={x1}
-          y1={Math.max(0, y1 - (startY > 0 ? extensionY : 0))}
+          y1={Math.max(0, y1 - (range.startY > 0 ? extensionY : 0))}
           x2={x2}
-          y2={y2 + (endY < boardSize - 1 ? extensionY : 0)}
+          y2={y2 + (range.endY < boardSize - 1 ? extensionY : 0)}
           stroke='black'
           strokeWidth='1'
         />
       );
     }
-    // for (let x = startX; x <= endX; x++) {
-    //   const [x1, y1] = transformCoordinates(x, startY);
-    //   const [x2, y2] = transformCoordinates(x, endY);
-    //   lines.push(
-    //     <Line
-    //       key={`v${x}`}
-    //       x1={x1}
-    //       y1={y1}
-    //       x2={x2}
-    //       y2={y2}
-    //       stroke='black'
-    //       strokeWidth='1'
-    //     />
-    //   );
-    // }
 
     // Horizontal lines
-    for (let y = startY; y <= endY; y++) {
-      const [x1, y1] = transformCoordinates(startX, y);
-      const [x2, y2] = transformCoordinates(endX, y);
+    for (let y = range.startY; y <= range.endY; y++) {
+      const [x1, y1] = transformCoordinates(range.startX, y);
+      const [x2, y2] = transformCoordinates(range.endX, y);
       lines.push(
         <Line
           key={`h${y}`}
-          x1={Math.max(0, x1 - (startX > 0 ? extensionX : 0))}
+          x1={Math.max(0, x1 - (range.startX > 0 ? extensionX : 0))}
           y1={y1}
-          x2={x2 + (endX < boardSize - 1 ? extensionX : 0)}
+          x2={x2 + (range.endX < boardSize - 1 ? extensionX : 0)}
           y2={y2}
           stroke='black'
           strokeWidth='1'
@@ -143,8 +133,8 @@ export const GoBoard: React.FC = () => {
   const renderStones = () => {
     const stones = [];
 
-    for (let y = startY; y <= endY; y++) {
-      for (let x = startX; x <= endX; x++) {
+    for (let y = range.startY; y <= range.endY; y++) {
+      for (let x = range.startX; x <= range.endX; x++) {
         const stone = board.get([x, y]);
         if (stone !== 0) {
           const [cx, cy] = transformCoordinates(x, y);
@@ -192,7 +182,12 @@ export const GoBoard: React.FC = () => {
 
     for (const x of starPositions) {
       for (const y of starPositions) {
-        if (x >= startX && x <= endX && y >= startY && y <= endY) {
+        if (
+          x >= range.startX &&
+          x <= range.endX &&
+          y >= range.startY &&
+          y <= range.endY
+        ) {
           const [cx, cy] = transformCoordinates(x, y);
           starPoints.push(
             <Circle key={`star-${x}-${y}`} cx={cx} cy={cy} r={3} fill='black' />
@@ -217,7 +212,7 @@ export const GoBoard: React.FC = () => {
           x1={hx}
           y1={0}
           x2={hx}
-          y2={actualBoardHeight}
+          y2={totalBoardHeight}
           stroke={color}
           strokeWidth='2'
           opacity='0.5'
@@ -225,7 +220,7 @@ export const GoBoard: React.FC = () => {
         <Line
           x1={0}
           y1={hy}
-          x2={actualBoardWidth}
+          x2={totalBoardWidth}
           y2={hy}
           stroke={color}
           strokeWidth='2'
@@ -267,7 +262,12 @@ export const GoBoard: React.FC = () => {
       const [x, y] = sgfToVertex(coordinate);
       const [tx, ty] = transformVertex([x, y], transformation, boardSize);
 
-      if (tx >= startX && tx <= endX && ty >= startY && ty <= endY) {
+      if (
+        tx >= range.startX &&
+        tx <= range.endX &&
+        ty >= range.startY &&
+        ty <= range.endY
+      ) {
         const [cx, cy] = transformCoordinates(tx, ty);
         const color = type === 'o' ? 'green' : type === 'x' ? 'red' : null;
         if (color) {
@@ -294,10 +294,10 @@ export const GoBoard: React.FC = () => {
     const labels = [];
     const labelOffset = spacing * 0.75;
 
-    for (let x = startX; x <= endX; x++) {
-      const [cx] = transformCoordinates(x, startY);
-      const [_, topY] = transformCoordinates(startX, startY);
-      const [__, bottomY] = transformCoordinates(startX, endY);
+    for (let x = range.startX; x <= range.endX; x++) {
+      const [cx] = transformCoordinates(x, range.startY);
+      const [_, topY] = transformCoordinates(range.startX, range.startY);
+      const [__, bottomY] = transformCoordinates(range.startX, range.endY);
       const label = getColumnLabel(x);
 
       labels.push(
@@ -332,9 +332,9 @@ export const GoBoard: React.FC = () => {
 
     const labels = [];
     const xLeft = -spacing * 0.2; // Left of the board
-    const xRight = actualBoardWidth + spacing * 0.2; // Right of the board
+    const xRight = totalBoardWidth + spacing * 0.2; // Right of the board
 
-    for (let y = startY; y <= endY; y++) {
+    for (let y = range.startY; y <= range.endY; y++) {
       const [, cy] = transformCoordinates(0, y);
       const label = (y + 1).toString();
 
@@ -367,110 +367,37 @@ export const GoBoard: React.FC = () => {
     return labels;
   };
 
-  const renderCoordinates = () => {
-    if (!showCoordinates) return null;
-
-    const coordinates = [];
-    const textOffset = spacing / 2;
-
-    // Column labels (top and bottom)
-    for (let x = startX; x <= endX; x++) {
-      const [topX, topY] = transformCoordinates(x, startY);
-      const [bottomX, bottomY] = transformCoordinates(x, endY);
-      const label = getColumnLabel(x);
-
-      coordinates.push(
-        <SvgText
-          key={`top-${x}`}
-          x={topX}
-          y={Math.max(10, topY - textOffset)}
-          textAnchor='middle'
-          fontSize={spacing / 2}
-          fill='black'
-        >
-          {label}
-        </SvgText>,
-        <SvgText
-          key={`bottom-${x}`}
-          x={bottomX}
-          y={bottomY + textOffset}
-          textAnchor='middle'
-          fontSize={spacing / 2}
-          fill='black'
-        >
-          {label}
-        </SvgText>
-      );
-    }
-
-    // Row labels (left and right)
-    for (let y = startY; y <= endY; y++) {
-      const [leftX, leftY] = transformCoordinates(startX, y);
-      const [rightX, rightY] = transformCoordinates(endX, y);
-      const label = (y + 1).toString();
-
-      coordinates.push(
-        <SvgText
-          key={`left-${y}`}
-          x={Math.max(10, leftX - textOffset)}
-          y={leftY + spacing / 8}
-          textAnchor='middle'
-          fontSize={spacing / 2}
-          fill='black'
-        >
-          {label}
-        </SvgText>,
-        <SvgText
-          key={`right-${y}`}
-          x={rightX + textOffset}
-          y={rightY + spacing / 8}
-          textAnchor='middle'
-          fontSize={spacing / 2}
-          fill='black'
-        >
-          {label}
-        </SvgText>
-      );
-    }
-
-    return coordinates;
-  };
-
   return (
-    // <Profiler id='GoBoard' onRender={profilerRender}>
-    <View
-      style={[
-        styles.container,
-        { width: actualBoardWidth, height: actualBoardHeight }
-      ]}
-      onLayout={(event) => {
-        setContainerHeight(event.nativeEvent.layout.height);
-      }}
-    >
-      <Svg
-        width={actualBoardWidth}
-        height={actualBoardHeight}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+    <Profiler id='GoBoard' onRender={profilerRender}>
+      <View
+        style={[
+          styles.container,
+          {
+            width: totalBoardWidth,
+            height: totalBoardHeight
+          }
+        ]}
       >
-        <G
-          transform={`translate(${showCoordinates ? spacing * 0.75 : 0}, ${
-            showCoordinates ? spacing * 0.75 : 0
-          })`}
+        <Svg
+          width={totalBoardWidth}
+          height={totalBoardHeight}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
-          {renderGrid()}
-          {renderStarPoints()}
-          {renderHighlightLines()}
-          {renderStones()}
-          {renderHints()}
-          {renderGhostStone()}
-          {renderColumnLabels()}
-          {renderRowLabels()}
-        </G>
-      </Svg>
-    </View>
-    // </Profiler>
+          <G>
+            {renderGrid()}
+            {renderStarPoints()}
+            {renderHighlightLines()}
+            {renderStones()}
+            {renderHints()}
+            {renderGhostStone()}
+            {renderColumnLabels()}
+            {renderRowLabels()}
+          </G>
+        </Svg>
+      </View>
+    </Profiler>
   );
 };
 
