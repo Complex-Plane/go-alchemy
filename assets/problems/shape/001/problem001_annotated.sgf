@@ -1,0 +1,13 @@
+;GM[1]FF[4]CA[UTF-8]AP[Sabaki:0.51.1]KM[6.5]SZ[19]DT[2025-01-19]PL[B]AW[qd][pc][qf][lc][kc][kd][md][mb]AB[oc][od][nb][mc][ld][le]C[A black stone is in atari. How should Black play?]LB[me:o][nc:x]
+(
+  ;B[me]C[Correct]LB[nc:x]
+  ;W[nc]LB[nd:x]
+  ;B[nd]LB[mc:x]
+  ;W[mc]LB[pb:x]
+  ;B[pb]LB[qb:x]
+  ;W[qb]LB[of:x]
+  ;B[of]
+)(
+  ;B[nc]C[Failure]LB[me:x]
+  ;W[me]C[Black's stones are separated]
+)

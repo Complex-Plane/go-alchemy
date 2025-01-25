@@ -1,0 +1,15 @@
+;GM[1]FF[4]CA[UTF-8]AP[Sabaki:0.51.1]KM[6.5]SZ[19]DT[2025-01-21]C[How can Black defend the weak points in his position while making good shape?]AB[nb][nc][md][le][ne]AW[me][mf][jd][nd][od][oc][ob][pd][pf]LB[lc:o][ld:x]
+(
+  ;B[lc]C[Correct]LB[lf:x]
+  ;W[lf]LB[ke:x]
+  ;B[ke]
+)(
+  ;B[ld]C[Wrong]LB[lf:x]
+  ;W[lf]LB[ke:x][kf:x]
+  (
+    ;B[ke]C[Black is left with an empty triangle]
+  )(
+    ;B[kf]LB[ke:x]
+    ;W[ke]C[Black's stones at the top are in trouble.]
+  )
+)

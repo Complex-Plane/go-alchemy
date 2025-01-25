@@ -1,0 +1,7 @@
+;GM[1]FF[4]CA[UTF-8]AP[Sabaki:0.51.1]KM[6.5]SZ[19]DT[2025-01-20]C[Where should Black play to make good shape?]AW[pc][pd][od][nd][jc]AB[lc][nc][oc][qf]LB[md:o]
+(
+  ;B[md]C[Correct]
+)(
+  ;B[]LB[md:x]
+  ;W[md]C[Failure]
+)

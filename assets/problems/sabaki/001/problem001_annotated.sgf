@@ -1,0 +1,36 @@
+;GM[1]FF[4]CA[UTF-8]AP[Sabaki:0.51.1]KM[6.5]SZ[19]DT[2025-01-23]C[After White jumps lightly into the center with the marked stoned, Black peeps with 1, threatening a cut at A. How should White respond?]AB[pd][pf][qk][pq][qp][qo][pm][jp][fq]AW[dp][dn][nc][jd][dd][po][qn][ol]TR[ol]LB[pm:1][pn:A][pl:o][pn:x]PL[W]
+(
+  ;W[pl]C[Correct]LB[qm:x][ql:x]
+  (
+    ;B[qm]LB[ql:x]
+    ;W[ql]LB[rl:x]
+    ;B[rl]LB[rk:x]
+    ;W[rk]LB[rm:x]
+    ;B[rm]LB[qj:x]
+    ;W[qj]
+  )(
+    ;B[ql]LB[qm:x]
+    ;W[qm]LB[om:x]
+    ;B[om]LB[nm:x]
+    ;W[nm]LB[on:x]
+    ;B[on]LB[no:x]
+    ;W[no]LB[nn:x]
+    ;B[nn]LB[mn:x]
+    ;W[mn]LB[mm:x]
+    ;B[mm]LB[oo:x]
+    ;W[oo]LB[nl:x]
+    ;B[nl]LB[pn:x]
+    ;W[pn]LB[nm:x]
+    ;B[nm]LB[oq:x]
+    ;W[oq]LB[or:x]
+    ;B[or]LB[nq:x]
+    ;W[nq]LB[nr:x]
+    ;B[nr]LB[ln:x]
+    ;W[ln]LB[ok:x]
+    ;B[ok]LB[lq:x]
+    ;W[lq]
+  )
+)(
+  ;W[pn]C[Wrong]LB[om:x]
+  ;B[om]C[Wrong]
+)

@@ -1,0 +1,22 @@
+;GM[1]FF[4]CA[UTF-8]AP[Sabaki:0.51.1]KM[6.5]SZ[19]DT[2025-01-20]C[What is the shape move for Black to link up his stones?]AB[pc][oc][ob][nb][lc][qf]AW[mb][mc][nc][nd][ld][od][pd]LB[rd:o][qd:x]
+(
+  ;B[rd]C[Correct]LB[qd:x][qc:x]
+  (
+    ;W[qd]LB[rc:x]
+    ;B[rc]
+  )(
+    ;W[qc]LB[qb:x]
+    ;B[qb]LB[rc:x]
+    ;W[rc]LB[qd:x]
+    ;B[qd]LB[rb:x]
+    ;W[rb]LB[ra:x]
+    ;B[ra]
+  )
+)(
+  ;B[qd]C[Failure]LB[qc:x]
+  ;W[qc]LB[qb:x]
+  ;B[qb]LB[qe:x]
+  ;W[qe]LB[rc:x]
+  ;B[rc]LB[re:x]
+  ;W[re]C[White cuts off the marked stone.]TR[qf]
+)

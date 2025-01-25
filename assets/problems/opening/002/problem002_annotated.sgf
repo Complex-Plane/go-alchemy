@@ -1,0 +1,14 @@
+;GM[1]FF[4]CA[UTF-8]AP[Sabaki:0.51.1]KM[6.5]SZ[19]DT[2025-01-23]C[When Black has the marked stones in place, an early invasion by White at the 3-3 point with 1 is unreasonable. After the exchange of 2 for 3, what is Black's most forceful move?]AB[pd][pq][jd][pk][oo][qd]AW[dd][dp][np][kp][qc][pc]TR[jd][pk]LB[pc:3][qc:1][qd:2][oc:o][od:x]
+(
+  ;B[oc]LB[ob:o]
+  ;W[ob]LB[nc:o]
+  ;B[nc]C[Correct]
+)(
+  ;B[od]LB[oc:x]
+  ;W[oc]LB[nc:x]
+  ;B[nc]LB[nb:x]
+  ;W[nb]LB[mc:x]
+  ;B[mc]LB[mb:x]
+  ;W[mb]LB[lc:x]
+  ;B[lc]C[Wrong]
+)

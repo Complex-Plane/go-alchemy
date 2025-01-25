@@ -13,9 +13,8 @@ import { loadSgfFromAssets } from '@/utils/sgfLoader';
 import { Sign, Vertex } from '@sabaki/go-board';
 import { debugLog } from '@/utils/debugLog';
 import { vertexToSgf } from '@/utils/sgfUtils';
-import { processGameTree } from '@/scripts/annotateSgf';
 import { useTransform } from './TransformContext';
-import { SGF_FILES } from '@/assets/sgf';
+import { SGF_FILES } from '@/assets/problems';
 import { transformRange } from '@/helper/setupBoard';
 import { BoardRange } from '@/types/board';
 
@@ -107,12 +106,12 @@ function useGameTreeState(category: string, id: string | number) {
   useEffect(() => {
     async function loadProblem() {
       try {
-        debugLog('GameTree', 'Attempting to load problem', { category, id });
+        // debugLog('GameTree', 'Attempting to load problem', { category, id });
         if (category && id) {
           setIsLoading(true);
           // Load sgf from assets by Category/ProblemId
           const sgfContent = await loadSgfFromAssets(category, idx);
-          debugLog('GameTree', 'SGF content loaded:', sgfContent);
+          // debugLog('GameTree', 'SGF content loaded:', sgfContent);
 
           // Parse sgf to state
           const rootNodes = sgf.parse(sgfContent, { getId });
@@ -120,9 +119,6 @@ function useGameTreeState(category: string, id: string | number) {
 
           if (rootNodes.length === 0) throw new Error('Error with rootNodes');
           let tree = new GameTree({ getId, root: rootNodes[0] });
-
-          // Add hint labels to tree
-          tree = await labelTree(tree);
 
           // debugLog('GameTree', 'Created game tree:', tree);
           setGameTree(tree);
@@ -264,11 +260,6 @@ function useGameTreeState(category: string, id: string | number) {
     },
     [startingNode]
   );
-
-  const labelTree = async (tree: GameTreeType): Promise<GameTreeType> => {
-    const labeledTree = await processGameTree(tree);
-    return labeledTree;
-  };
 
   const navigate = {
     forward: useCallback(() => {

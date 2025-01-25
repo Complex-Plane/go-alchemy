@@ -133,7 +133,7 @@ export const GoBoard: React.FC<GoBoardProps> = ({
           x2={x2}
           y2={y2}
           stroke='black'
-          strokeWidth='1'
+          strokeWidth='.5'
         />
       );
     }
@@ -398,7 +398,7 @@ export const GoBoard: React.FC<GoBoardProps> = ({
   const renderLabelsAndMarks = () => {
     const markups: React.ReactElement[] = [];
     const MARK_SCALE = 0.6; // Adjust size of marks relative to spacing
-    const LABEL_FONT_SIZE = spacing * 0.4; // Adjust font size relative to spacing
+    const LABEL_FONT_SIZE = spacing * 0.7; // Adjust font size relative to spacing
 
     // Handle labels (LB)
     if (currentNode?.data.LB) {
@@ -540,37 +540,37 @@ export const GoBoard: React.FC<GoBoardProps> = ({
   };
 
   return (
-    <Profiler id='GoBoard' onRender={profilerRender}>
-      <View
-        style={[
-          styles.container,
-          {
-            width: totalBoardWidth,
-            height: totalBoardHeight
-          }
-        ]}
+    // <Profiler id='GoBoard' onRender={profilerRender}>
+    <View
+      style={[
+        styles.container,
+        {
+          width: totalBoardWidth,
+          height: totalBoardHeight
+        }
+      ]}
+    >
+      <Svg
+        width={totalBoardWidth}
+        height={totalBoardHeight}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
-        <Svg
-          width={totalBoardWidth}
-          height={totalBoardHeight}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-        >
-          <G>
-            {renderGrid()}
-            {renderStarPoints()}
-            {renderHighlightLines()}
-            {renderStones()}
-            {renderHints()}
-            {renderLabelsAndMarks()}
-            {renderGhostStone()}
-            {renderColumnLabels()}
-            {renderRowLabels()}
-          </G>
-        </Svg>
-      </View>
-    </Profiler>
+        <G>
+          {renderGrid()}
+          {renderStarPoints()}
+          {renderHighlightLines()}
+          {renderStones()}
+          {renderHints()}
+          {renderLabelsAndMarks()}
+          {renderGhostStone()}
+          {renderColumnLabels()}
+          {renderRowLabels()}
+        </G>
+      </Svg>
+    </View>
+    // </Profiler>
   );
 };
 

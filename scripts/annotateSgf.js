@@ -1,21 +1,17 @@
+const fs = require('fs');
+const path = require('path');
 const GameTree = require('@sabaki/immutable-gametree');
 const sgf = require('@sabaki/sgf');
-import { getId } from '../utils/getId';
-import { loadSgfFromAssets } from '../utils/sgfLoader';
 
-// Function to load SGF file and create a game tree
-export async function loadSgfTree(category, id) {
-  console.log('Loading sgf...');
-  // Load sgf from assets by Category/ProblemId
-  const sgfContent = await loadSgfFromAssets(category, id);
+let getId = (
+  (id) => () =>
+    id++
+)(0);
 
-  // Parse sgf to state
-  const rootNodes = sgf.parse(sgfContent, { getId });
-  return new GameTree({ getId, root: rootNodes[0] });
-}
+const PROBLEMS_DIR = path.resolve(__dirname, '../assets/problems');
 
 // Function to check if a node leads to a correct solution
-export function leadsToCorrect(tree, node) {
+function leadsToCorrect(tree, node) {
   // Check if the current node is a correct leaf
   const comment = node.data.C?.[0] ?? '';
   if (comment.toLowerCase().includes('correct')) {
@@ -32,7 +28,6 @@ export function leadsToCorrect(tree, node) {
 // Function to add hint labels to a node
 function addHintLabels(tree, nodeId) {
   return tree.mutate((draft) => {
-    // console.log('Labeling node ', nodeId);
     const node = draft.get(nodeId);
 
     // Get all child moves
@@ -52,104 +47,91 @@ function addHintLabels(tree, nodeId) {
       const isCorrect = leadsToCorrect(tree, tree.get(childId));
       return `${move}:${isCorrect ? 'o' : 'x'}`;
     });
-    // console.log('Labels: ', labels);
 
     // Add labels to the current node
     if (labels.length > 0) {
       labels.forEach((label) => draft.addToProperty(nodeId, 'LB', label));
     }
-    console.log('Node data: ', nodeId, draft.get(nodeId).data);
   });
 }
 
-// Function to convert game tree back to SGF
-export function treeToSgf(tree) {
-  function nodeToSgf(nodeId) {
-    const node = tree.get(nodeId);
-    let sgfNode = ';';
-
-    // Add properties
-    for (const [property, values] of Object.entries(node.data)) {
-      values.forEach((value) => {
-        sgfNode += `${property}[${value}]`;
-      });
-    }
-
-    // Add variations
-    if (node.children.length > 0) {
-      if (node.children.length === 1) {
-        sgfNode += nodeToSgf(node.children[0]);
-      } else {
-        node.children.forEach((childId) => {
-          sgfNode += `(${nodeToSgf(childId)})`;
-        });
-      }
-    }
-
-    return sgfNode;
-  }
-
-  return `(${nodeToSgf(tree.root.id)})`;
-}
-
-export async function processGameTree(tree) {
-  console.log('Running processGameTree...');
-
-  // Function to process each node in the tree
-  function processNode(nodeId) {
-    tree = addHintLabels(tree, nodeId);
-
-    // Recursively process children
-    const node = tree.get(nodeId);
-    node.children.forEach((child) => {
-      processNode(child.id);
-    });
-  }
-
-  // Start processing from the root
-  processNode(tree.root.id);
-
-  console.log('Finished labeling tree...');
-
+function processNode(tree, nodeId) {
+  tree = addHintLabels(tree, nodeId);
+  const node = tree.get(nodeId);
+  node.children.forEach((child) => {
+    tree = processNode(tree, child.id);
+  });
   return tree;
 }
 
-export async function processGameTreeFromFile(category, id) {
-  console.log('Running processGameTree: ', category, id);
-  // Load the tree
-  let tree = await loadSgfTree(category, id);
+async function processAllSGFFiles() {
+  // Get all category directories
+  const categories = fs
+    .readdirSync(PROBLEMS_DIR)
+    .filter((file) => fs.statSync(path.join(PROBLEMS_DIR, file)).isDirectory());
 
-  console.log('File loaded');
+  for (const category of categories) {
+    const categoryPath = path.join(PROBLEMS_DIR, category);
 
-  // Function to process each node in the tree
-  function processNode(nodeId) {
-    // Add hint labels to this node
-    tree = addHintLabels(tree, nodeId);
+    // Get all problem directories in the category
+    const problemDirs = fs
+      .readdirSync(categoryPath)
+      .filter((dir) => fs.statSync(path.join(categoryPath, dir)).isDirectory());
 
-    // Recursively process children
-    const node = tree.get(nodeId);
-    node.children.forEach((child) => {
-      processNode(child.id);
-    });
+    for (const problemDir of problemDirs) {
+      const problemPath = path.join(categoryPath, problemDir);
+
+      // Find SGF file
+      const sgfFiles = fs
+        .readdirSync(problemPath)
+        .filter(
+          (file) => file.endsWith('.sgf') && !file.endsWith('_annotated.sgf')
+        );
+
+      if (sgfFiles.length === 0) {
+        console.warn(`No SGF file found in ${problemPath}`);
+        continue;
+      }
+
+      const sgfFile = sgfFiles[0]; // Assume only one non-annotated SGF per problem
+      const sgfPath = path.join(problemPath, sgfFile);
+
+      console.log(`Processing: ${category} - ${problemDir} - ${sgfFile}`);
+
+      try {
+        // Read and parse SGF file
+        const sgfContent = fs.readFileSync(sgfPath, 'utf8');
+        const rootNodes = sgf.parse(sgfContent, { getId });
+        let tree = new GameTree({ getId, root: rootNodes[0] });
+
+        // Process the game tree
+        tree = processNode(tree, tree.root.id);
+
+        // Convert back to SGF
+        const newSgf = sgf.stringify(tree.root);
+
+        // Determine output path
+        const baseName = path.basename(sgfFile, '.sgf');
+        const outputPath = path.join(problemPath, `${baseName}_annotated.sgf`);
+
+        // Write the annotated SGF
+        fs.writeFileSync(outputPath, newSgf);
+        console.log(`Saved annotated file: ${outputPath}`);
+      } catch (error) {
+        console.error(
+          `Error processing ${category} - ${problemDir} - ${sgfFile}:`,
+          error
+        );
+      }
+    }
   }
-
-  // Start processing from the root
-  processNode(tree.root.id);
-
-  console.log('Finished labeling tree...');
-
-  // Convert back to SGF
-  // const newTree = treeToSgf(tree);
-  const newSgf = sgf.stringify(tree);
-  // sgf.stringify(nodes[, options])
-  //   nodes <NodeObject[]>
-  //   options <Object> (optional)
-  //   linebreak <String> (optional) - Default: "\n"
-  //   indent <String> (optional) - Default: " "
-  //   Returns an SGF string representing the root nodes nodes.
-
-  console.log(newSgf);
-  return newSgf;
 }
 
-processGameTreeFromFile('tesuji', '0');
+// Run the process
+processAllSGFFiles()
+  .then(() => {
+    console.log('Finished processing all problems');
+  })
+  .catch((error) => {
+    console.error('An error occurred:', error);
+  });

@@ -1,0 +1,17 @@
+;GM[1]FF[4]CA[UTF-8]AP[Sabaki:0.51.1]KM[6.5]SZ[19]DT[2025-01-20]C[How can Black separate White's stones?]AB[qc][rc][pd][qe][od]AW[oc][pc][qb][lc][le]LB[nc:o]
+(
+  ;B[nc]LB[nb:o]
+  ;W[nb]LB[ob:o][mb:x]
+  (
+    ;B[ob]LB[pb:o]
+    ;W[pb]LB[mb:o]
+    ;B[mb]LB[oa:o]
+    ;W[oa]LB[mc:o]
+    ;B[mc]C[Correct]
+  )(
+    ;B[mb]LB[mc:x]
+    ;W[mc]LB[nd:x]
+    ;B[nd]LB[ob:x]
+    ;W[ob]C[Failure]
+  )
+)

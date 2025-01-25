@@ -1,0 +1,22 @@
+;GM[1]FF[4]CA[UTF-8]AP[Sabaki:0.51.1]KM[6.5]SZ[19]DT[2025-01-20]C[How should Black defend the right side?]AB[od][oe][qd][nc][mc][lc][lb]AW[nd][mb][nb][oc][pc][qc]LB[re:o][rd:x]
+(
+  ;B[re]C[Correct]LB[rc:x][rd:x][:x]
+  (
+    ;W[rc]
+  )(
+    ;W[rd]LB[qe:x]
+    ;B[qe]C[White can keep sente in this variation.]
+  )(
+    ;W[]LB[re:1][rc:x]
+    ;B[rc]LB[rc:A][re:1][rb:x]
+    ;W[rb]LB[rb:B][rc:A][re:1][sb:x]
+    ;B[sb]C[If White does not respond to Black 1, Black A to C kills the White stones.]LB[rb:B][rc:A][re:1][sb:C]
+  )
+)(
+  ;B[rd]C[Failure]LB[rc:x]
+  ;W[rc]
+  ;B[]LB[pd:x]
+  ;W[pd]LB[pd:A][pe:x]
+  ;B[pe]LB[pd:A][pe:B][qe:x]
+  ;W[qe]LB[pd:A][pe:B][qe:C]C[White is threatening the sequence, A-B-C.]
+)

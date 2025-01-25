@@ -1,0 +1,20 @@
+;GM[1]FF[4]CA[UTF-8]AP[Sabaki:0.51.1]KM[6.5]SZ[19]DT[2025-01-21]C[White has just peeped with the marked stone. How should Black answer?]AB[pc][qb][rb][rc][od][oe][pf]AW[qc][qd][qe][rd][qg][qi][mc][ne][jc][ob]TR[ob]LB[nb:o][pb:x]
+(
+  ;B[nb]C[Correct]LB[nc:x]
+  ;W[nc]LB[oc:x]
+  ;B[oc]LB[mb:x]
+  ;W[mb]LB[pb:x]
+  ;B[pb]LB[na:x][nf:x]
+  (
+    ;W[na]LB[nf:x]
+    ;B[nf]
+  )(
+    ;W[nf]LB[oa:x]
+    ;B[oa]
+  )
+)(
+  ;B[pb]C[Wrong]LB[oc:x]
+  ;W[oc]LB[pd:x]
+  ;B[pd]LB[nf:x]
+  ;W[nf]C[Black's stones are heavy and under attack.]
+)

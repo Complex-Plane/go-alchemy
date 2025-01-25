@@ -1,0 +1,11 @@
+;GM[1]FF[4]CA[UTF-8]AP[Sabaki:0.51.1]KM[6.5]SZ[19]DT[2025-01-21]C[White has played 1. With the marked stone in place, how should Black answer?]AB[pd][pf][of]AW[qf][pg][qe][nc]TR[nc]LB[qe:1][qd:o][od:x]
+(
+  ;B[qd]C[Correct]LB[pe:x]
+  ;W[pe]LB[od:x]
+  ;B[od]LB[oe:x]
+  ;W[oe]LB[nd:x]
+  ;B[nd]
+)(
+  ;B[od]LB[rc:x]
+  ;W[rc]C[Failure]
+)

@@ -1,0 +1,33 @@
+;GM[1]FF[4]CA[UTF-8]AP[Sabaki:0.51.1]KM[6.5]SZ[19]DT[2025-01-21]C[Black plays 1 at the head of two stones. How should he answer White 2?]AB[qd][re][qe][pe][oe][nd]AW[od][pd][qc][rc][rd][ne]LB[nd:1][ne:2][ob:o]
+(
+  ;B[ob]C[Correct]LB[pb:x][nc:x]
+  (
+    ;W[pb]LB[nc:x]
+    ;B[nc]LB[pc:x][ra:x]
+    (
+      ;W[pc]LB[ra:x]
+      ;B[ra]LB[nc:3][ob:1][pb:2][pc:4][ra:5]C[If White defends with 4, Black 5 kills the corner.]
+    )(
+      ;W[ra]LB[nc:3][ob:1][pb:2][ra:4][pc:x]C[White must make eye shape with 4]
+      ;B[pc]LB[nc:3][ob:1][pb:2][pc:5][ra:4][pa:x]
+      ;W[pa]LB[nc:3][ob:1][pa:6][pb:2][pc:5][ra:4]C[White must play 6 to live.]
+    )
+  )(
+    ;W[nc]C[White's mistake.]LB[md:x]
+    ;B[md]LB[mc:x]
+    ;W[mc]LB[oc:x]
+    ;B[oc]LB[pc:x]
+    ;W[pc]LB[lc:x]
+    ;B[lc]LB[ld:x]
+    ;W[ld]LB[me:x]
+    ;B[me]LB[lb:x]
+    ;W[lb]LB[kc:x]
+    ;B[kc]LB[nb:x]
+    ;W[nb]LB[na:x]
+    ;B[na]LB[mb:x]
+    ;W[mb]LB[kb:x]
+    ;B[kb]LB[pb:x]
+    ;W[pb]LB[nf:x]
+    ;B[nf]C[White lives with 16, but Black gets overwhelming influence and thickness when he captures with 17.]LB[kb:15][kc:11][lb:10][lc:7][ld:8][mb:14][mc:4][md:3][me:9][na:13][nb:12][nc:2][nf:17][ob:1][oc:5][pb:16][pc:6]
+  )
+)

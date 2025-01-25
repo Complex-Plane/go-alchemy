@@ -1,0 +1,11 @@
+;GM[1]FF[4]CA[UTF-8]AP[Sabaki:0.51.1]KM[6.5]SZ[19]DT[2025-01-21]AB[pd][pf][of]AW[qf][pg][qe][nd]C[White has played 1. With the marked stone in place, where should Black play?]TR[nd]LB[qe:1][od:o][qd:x]
+(
+  ;B[od]C[Correct]LB[rc:x]
+  ;W[rc]LB[nc:x]
+  ;B[nc]
+)(
+  ;B[qd]LB[pe:x]
+  ;W[pe]LB[oe:x]
+  ;B[oe]LB[od:x]
+  ;W[od]C[Failure]
+)

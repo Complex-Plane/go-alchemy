@@ -1,0 +1,12 @@
+;GM[1]FF[4]CA[UTF-8]AP[Sabaki:0.51.1]KM[6.5]SZ[19]DT[2025-01-21]C[White's stones have a defective shape. How should Black attack them?]AB[pd][oc][nd][ne][pf][mc][lc][kd]AW[nc][nb][ob][pb][qc][ld][md][mf]LB[lf:o]
+(
+  ;B[lf]C[Correct]LB[me:x]
+  ;W[me]LB[mg:x]
+  ;B[mg]LB[nf:x]
+  ;W[nf]LB[ng:x]
+  ;B[ng]LB[of:x]
+  ;W[of]LB[og:x]
+  ;B[og]LB[pe:x]
+  ;W[pe]LB[qe:x]
+  ;B[qe]C[White's stones are captured.]
+)

@@ -1,0 +1,11 @@
+;GM[1]FF[4]CA[UTF-8]AP[Sabaki:0.51.1]KM[6.5]SZ[19]DT[2025-01-21]C[How should Black link up his stones?]AB[pc][od][lc][kc][jc]AW[qe][kd][ld][md]LB[nb:o][mc:x]
+(
+  ;B[nb]C[Correct]LB[nc:x]
+  ;W[nc]LB[ob:x]
+  ;B[ob]
+)(
+  ;B[mc]LB[nd:x]
+  ;W[nd]C[Wrong]LB[nc:x]
+  ;B[nc]LB[oe:x]
+  ;W[oe]C[White builds a thick wall.]
+)

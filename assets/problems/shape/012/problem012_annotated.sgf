@@ -1,0 +1,23 @@
+;GM[1]FF[4]CA[UTF-8]AP[Sabaki:0.51.1]KM[6.5]SZ[19]DT[2025-01-21]C[The marked stone is splitting Black's stones. How can Black make good shape?]AB[oc][mc][ld][le]AW[qd][pe][qh][md][lc][kc][kd]TR[md]LB[ne:o][nd:x]
+(
+  ;B[ne]C[Correct]LB[nc:x]
+  ;W[nc]LB[mb:x]
+  ;B[mb]LB[nd:x]
+  ;W[nd]LB[od:x]
+  ;B[od]LB[nb:x]
+  ;W[nb]LB[ob:x]
+  ;B[ob]LB[ma:x]
+  ;W[ma]LB[me:x]
+  ;B[me]LB[lb:x]
+  ;W[lb]LB[oe:x]
+  ;B[oe]
+)(
+  ;B[nd]C[Failure]LB[me:x]
+  ;W[me]LB[ne:x]
+  ;B[ne]LB[mf:x]
+  ;W[mf]LB[nf:x]
+  ;B[nf]LB[mb:x]
+  ;W[mb]LB[nc:x]
+  ;B[nc]LB[mg:x]
+  ;W[mg]
+)

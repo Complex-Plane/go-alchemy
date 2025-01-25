@@ -1,0 +1,15 @@
+;GM[1]FF[4]CA[UTF-8]AP[Sabaki:0.51.1]KM[6.5]SZ[19]DT[2025-01-21]C[Where should Black play to make good shape?]AB[pd][pe][nd][qf]AW[oc][pc][qc][qd][qe]LB[nf:o][pf:x]
+(
+  ;B[nf]C[Correct]LB[rf:x]
+  ;W[rf]LB[qg:x]
+  ;B[qg]LB[rg:x]
+  ;W[rg]LB[qi:x]
+  ;B[qi]C[Black gets a thick position in the center.]
+)(
+  ;B[pf]C[Wrong]LB[od:x]
+  ;W[od]LB[ne:x]
+  ;B[ne]LB[oe:x]
+  ;W[oe]LB[of:x]
+  ;B[of]LB[nf:x]
+  ;W[nf]C[Black's stones are split into two groups.]
+)

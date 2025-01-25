@@ -1,0 +1,9 @@
+;GM[1]FF[4]CA[UTF-8]AP[Sabaki:0.51.1]KM[6.5]SZ[19]DT[2025-01-21]C[How does White make good shape after Black turns with the marked stone?]AB[qd][pe][oe][oc][ob][nb]AW[nc][od][ne][md]TR[nb]PL[W]LB[lc:o][mb:x]
+(
+  ;W[lc]C[Correct]
+)(
+  ;W[mb]LB[lc:x]
+  ;B[lc]LB[mc:x]
+  ;W[mc]LB[jc:x]
+  ;B[jc]C[Wrong]
+)

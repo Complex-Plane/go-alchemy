@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { Card, Text } from '@rneui/themed';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { SGF_FILES } from '@/assets/sgf';
+import { SGF_FILES } from '@/assets/problems';
 import { Problem } from '@/types/sgf';
 
 const windowWidth = Dimensions.get('window').width;

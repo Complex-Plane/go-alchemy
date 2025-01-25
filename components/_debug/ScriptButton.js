@@ -1,5 +1,5 @@
 import { Button } from '@rneui/themed';
-import { processGameTreeFromFile } from '../../scripts/annotateSgf';
+// import { processGameTreeFromFile } from '../../scripts/annotateSgf';
 
 const ScriptButton = () => {
   const category = 'tesuji';
@@ -8,8 +8,8 @@ const ScriptButton = () => {
   const script = async () => {
     // Example usage
     console.log('Executing script...');
-    const processedSgf = await processGameTreeFromFile(category, id);
-    console.log(processedSgf);
+    // const processedSgf = await processGameTreeFromFile(category, id);
+    // console.log(processedSgf);
     console.log('Completed script.');
   };
 

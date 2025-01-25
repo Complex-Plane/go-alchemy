@@ -1,0 +1,11 @@
+;GM[1]FF[4]CA[UTF-8]AP[Sabaki:0.51.1]KM[6.5]SZ[19]DT[2025-01-20]C[How can Black keep White's stones heavy?]AB[pc][qe][lc][ld][le]AW[nc][md][nf]LB[oe:o]
+(
+  ;B[oe]C[Correct]LB[me:x][ne:x]
+  (
+    ;W[me]LB[lf:x]
+    ;B[lf]C[Black increases his thickness, keeping the white stones heavy and under attack.]
+  )(
+    ;W[ne]LB[od:x]
+    ;B[od]LB[nd:A]C[Black threatens to play A, linking up his stones.]
+  )
+)

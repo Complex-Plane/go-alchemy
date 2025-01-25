@@ -1,0 +1,26 @@
+;GM[1]FF[4]CA[UTF-8]AP[Sabaki:0.51.1]KM[6.5]SZ[19]DT[2025-01-20]C[Where should Black play to preserve his shape?]AB[qd][rc][sb][pe][pf][re]AW[rb][qc][pd][oe][of][nd][pc][jc]LB[pg:o][og:x]
+(
+  ;B[pg]C[Correct]LB[og:x]
+  ;W[og]LB[og:A][oh:x]
+  ;B[oh]LB[og:A][oh:B][nh:x]
+  ;W[nh]LB[nh:C][og:A][oh:B][ni:x]
+  ;B[ni]LB[nh:C][ni:D][og:A][oh:B]C[If White A, Black plays B, White C, Black D.]
+)(
+  ;B[og]C[Failure]LB[pg:x]
+  ;W[pg]LB[ph:x]
+  ;B[ph]LB[qg:x]
+  ;W[qg]LB[qh:x]
+  ;B[qh]LB[rg:x]
+  ;W[rg]LB[rh:x][rf:x]
+  (
+    ;B[rh]LB[qe:x]
+    ;W[qe]LB[qf:x]
+    ;B[qf]LB[rf:x]
+    ;W[rf]C[Black's shape is too weak to capture this stone.]
+  )(
+    ;B[rf]LB[rh:x]
+    ;W[rh]LB[ri:x]
+    ;B[ri]LB[qi:x]
+    ;W[qi]C[Black's position below collapses.]
+  )
+)

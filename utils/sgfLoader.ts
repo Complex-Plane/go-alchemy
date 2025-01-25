@@ -1,7 +1,7 @@
 import { SGFProblem } from '@/types';
 import { Asset } from 'expo-asset';
 import * as FileSystem from 'expo-file-system';
-import { SGF_FILES } from '@/assets/sgf';
+import { SGF_FILES } from '@/assets/problems';
 
 export async function loadSgfFromAssets(
   category: string,
