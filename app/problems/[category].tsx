@@ -13,6 +13,8 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SGF_FILES } from '@/assets/problems';
 import { Problem } from '@/types/sgf';
 
+// Route: '/problems/[category]'
+
 const windowWidth = Dimensions.get('window').width;
 // const itemPadding = 8;
 // const itemsPerRow = 4;

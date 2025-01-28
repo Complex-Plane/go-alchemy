@@ -24,6 +24,19 @@ export default function RootLayout() {
                 }}
               />
               <Tabs.Screen
+                name='daily'
+                options={{
+                  title: 'Daily Problems',
+                  tabBarIcon: ({ color }) => (
+                    <Icon
+                      type='material-community'
+                      name='calendar'
+                      color={color}
+                    />
+                  )
+                }}
+              />
+              <Tabs.Screen
                 name='problems'
                 options={{
                   title: 'Problems',

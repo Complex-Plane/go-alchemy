@@ -10,6 +10,8 @@ import {
 import { Text } from '@rneui/themed';
 import { useRouter } from 'expo-router';
 
+// Route: '/problems'
+
 const categories = [
   {
     key: 'tsumego',

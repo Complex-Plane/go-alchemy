@@ -7,6 +7,7 @@ export default function ProblemsLayout() {
   return (
     <Stack>
       <Stack.Screen name='index' options={{ title: 'Problem Categories' }} />
+      {/* <Stack.Screen name='daily' options={{ title: 'Daily Problems' }} /> */}
       <Stack.Screen
         name='[category]'
         options={({ route }) => ({
