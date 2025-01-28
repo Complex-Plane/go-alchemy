@@ -17,8 +17,6 @@ type BoardDimensionsProps = {
 
 type BoardDimensionsOutput = {
   delta: number;
-  paddingX: number;
-  paddingY: number;
   renderRange: ScreenRange;
   transformCoordinates: ([
     boardX,
@@ -108,8 +106,6 @@ export function useBoardDimensions({
 
     return {
       delta,
-      paddingX,
-      paddingY,
       renderRange,
       transformCoordinates,
       getNearestIntersection

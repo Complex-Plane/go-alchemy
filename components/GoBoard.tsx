@@ -1,4 +1,4 @@
-import React, { Profiler, useState } from 'react';
+import React, { Profiler, useCallback, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
@@ -93,13 +93,7 @@ export const GoBoard: React.FC<GoBoardProps> = ({
     setHoveredIntersection(null);
   };
 
-  const getCoordinateLabel = (type: string, index: number) => {
-    const letters = 'ABCDEFGHJKLMNOPQRSTUVWXYZ'; // Skip 'I'
-    if (type === 'row') return `${index + 1}`;
-    if (type === 'col') return letters[index];
-  };
-
-  const renderGrid = () => {
+  const renderGrid = useCallback(() => {
     const lines = [];
 
     // Vertical lines
@@ -137,7 +131,7 @@ export const GoBoard: React.FC<GoBoardProps> = ({
     }
 
     return lines;
-  };
+  }, [delta, renderRange, transformation]);
 
   const renderStones = () => {
     const stones = [];
