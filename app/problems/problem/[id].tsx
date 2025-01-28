@@ -32,8 +32,8 @@ export default function ProblemScreen() {
   const insets = useSafeAreaInsets();
 
   // Calculate fixed heights
-  const CONTROL_PANEL_HEIGHT = 70;
-  const COMMENT_DISPLAY_HEIGHT = 70;
+  const CONTROL_PANEL_HEIGHT = 150;
+  const COMMENT_DISPLAY_HEIGHT = 150;
 
   // Calculate available space for board
   const availableHeight =
@@ -51,7 +51,7 @@ export default function ProblemScreen() {
         <GameTreeProvider category={category as string} id={id as string}>
           <GameProvider>
             <SafeAreaView style={styles.container}>
-              <TransformationPanel />
+              {/* <TransformationPanel /> */}
               <CommentDisplay />
               <View
                 style={[

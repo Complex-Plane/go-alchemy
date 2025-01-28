@@ -1,80 +1,116 @@
-import { BoardRange, Coordinate } from '@/types/board';
+import {
+  BoardCoordinates,
+  BoardRange,
+  ScreenCoordinates,
+  ScreenRange
+} from '@/types/board';
 import { useMemo } from 'react';
 
 type BoardDimensionsProps = {
   range: BoardRange;
   availableWidth: number;
   availableHeight: number;
+  paddingMin: number;
   showCoordinates: boolean;
+  boardSize: number;
+};
+
+type BoardDimensionsOutput = {
+  delta: number;
+  paddingX: number;
+  paddingY: number;
+  renderRange: ScreenRange;
+  transformCoordinates: ([
+    boardX,
+    boardY
+  ]: BoardCoordinates) => ScreenCoordinates;
+  getNearestIntersection: ([
+    screenX,
+    screenY
+  ]: ScreenCoordinates) => BoardCoordinates;
 };
 
 export function useBoardDimensions({
   range,
   availableWidth,
   availableHeight,
-  showCoordinates
-}: BoardDimensionsProps) {
+  paddingMin,
+  showCoordinates,
+  boardSize
+}: BoardDimensionsProps): BoardDimensionsOutput {
   return useMemo(() => {
-    // Constants
-    const STONE_PADDING = 0.5;
-    const COORDINATE_PADDING = showCoordinates ? 0.75 : 0;
+    // Range of board vertices
+    const nx = Math.max(range.endX - range.startX + 1, 1);
+    const ny = Math.max(range.endY - range.startY + 1, 1);
+    paddingMin = showCoordinates ? paddingMin + 10 : paddingMin;
 
-    // Calculate visible board area
-    const visibleWidth = range.endX - range.startX + 1;
-    const visibleHeight = range.endY - range.startY + 1;
+    // Spacing between intersections
+    const deltaX = (availableWidth - 2 * paddingMin) / nx;
+    const deltaY = (availableHeight - 2 * paddingMin) / ny;
+    const delta = Math.min(deltaX, deltaY);
 
-    // Add padding to visible dimensions
-    const totalWidth = visibleWidth + 2 * STONE_PADDING;
-    const totalHeight = visibleHeight + 2 * STONE_PADDING;
+    // Padding between screen and top-left vertex
+    const paddingX = Math.max(
+      paddingMin,
+      (availableWidth - delta * (nx - 1)) / 2
+    );
+    const paddingY = Math.max(
+      paddingMin,
+      (availableHeight - delta * (ny - 1)) / 2
+    );
 
-    // Calculate spacing that fits within available space
-    const spacingByWidth =
-      (availableWidth - 2 * COORDINATE_PADDING) / totalWidth;
-    const spacingByHeight =
-      (availableHeight - 2 * COORDINATE_PADDING) / totalHeight;
-    const spacing = Math.min(spacingByWidth, spacingByHeight);
-
-    // Calculate actual board dimensions
-    const boardWidth = spacing * totalWidth;
-    const boardHeight = spacing * totalHeight;
-
-    // Calculate total dimensions including coordinate padding
-    const totalBoardWidth = boardWidth + 2 * COORDINATE_PADDING * spacing;
-    const totalBoardHeight = boardHeight + 2 * COORDINATE_PADDING * spacing;
-
-    // Transform functions
-    const transformCoordinates = (x: number, y: number): [number, number] => {
-      const coordPadding = COORDINATE_PADDING * spacing;
-      return [
-        (x - range.startX + STONE_PADDING) * spacing + coordPadding,
-        (y - range.startY + STONE_PADDING) * spacing + coordPadding
-      ];
+    // Range for drawing lines on board. May extend beyond `range`
+    const renderRange: ScreenRange = {
+      startX: Math.max(0, range.startX + Math.floor(-paddingX / delta)),
+      endX: Math.min(
+        boardSize - 1,
+        range.startX + Math.ceil((availableWidth - paddingX) / delta)
+      ),
+      startY: Math.max(0, range.startY + Math.floor(-paddingY / delta)),
+      endY: Math.min(
+        boardSize - 1,
+        range.startY + Math.ceil((availableHeight - paddingY) / delta)
+      )
     };
 
-    const getNearestIntersection = (
-      touchX: number,
-      touchY: number
-    ): Coordinate => {
-      const coordPadding = COORDINATE_PADDING * spacing;
-      const x =
-        Math.round((touchX - coordPadding) / spacing - STONE_PADDING) +
-        range.startX;
-      const y =
-        Math.round((touchY - coordPadding) / spacing - STONE_PADDING) +
-        range.startY;
+    // console.log('availableWidth: ', availableWidth);
+    // console.log('availableHeight: ', availableHeight);
+    // console.log('nx: ', nx);
+    // console.log('ny: ', ny);
+    // console.log('deltaX: ', deltaX);
+    // console.log('deltaY: ', deltaY);
+    // console.log('delta: ', delta);
+    // console.log('paddingMin: ', paddingMin);
+    // console.log('paddingX: ', paddingX);
+    // console.log('paddingY: ', paddingY);
+    // console.log('range: ', range);
+    // console.log('renderRange: ', renderRange);
 
-      return {
-        x: Math.max(range.startX, Math.min(range.endX, x)),
-        y: Math.max(range.startY, Math.min(range.endY, y))
-      };
+    // Transform from board coordinates to screen coordinates
+    const transformCoordinates = ([
+      boardX,
+      boardY
+    ]: BoardCoordinates): ScreenCoordinates => {
+      const screenX = paddingX + (boardX - range.startX) * delta;
+      const screenY = paddingY + (boardY - range.startY) * delta;
+      return [screenX, screenY];
+    };
+
+    // Transform from screen coordinates to board coordinates
+    const getNearestIntersection = ([
+      screenX,
+      screenY
+    ]: ScreenCoordinates): BoardCoordinates => {
+      const boardX = Math.round((screenX - paddingX) / delta) + range.startX;
+      const boardY = Math.round((screenY - paddingY) / delta) + range.startY;
+      return [boardX, boardY];
     };
 
     return {
-      spacing,
-      boardWidth,
-      boardHeight,
-      totalBoardWidth,
-      totalBoardHeight,
+      delta,
+      paddingX,
+      paddingY,
+      renderRange,
       transformCoordinates,
       getNearestIntersection
     };

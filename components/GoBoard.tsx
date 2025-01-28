@@ -11,7 +11,7 @@ import Svg, {
   Rect,
   Polygon
 } from 'react-native-svg';
-import { BoardRange, Coordinate } from '@/types/board';
+import { BoardCoordinates, BoardRange, Coordinate } from '@/types/board';
 import { useBoardDimensions } from '@/hooks/useBoardDimensions';
 import { useGame } from '@/contexts/GameContext';
 import { useBoardInput } from '@/hooks/useBoardInput';
@@ -20,6 +20,8 @@ import { useGameTree } from '@/contexts/GameTreeContext';
 import { vertexToSgf, sgfToVertex } from '@/utils/sgfUtils';
 import { transformVertex } from '@/helper/setupBoard';
 import { useTransform } from '@/contexts/TransformContext';
+
+const DEBUG_RANGES = true;
 
 const STONE_IMAGES = {
   BLACK: require('@/assets/images/black_stone.png'),
@@ -46,7 +48,7 @@ export const GoBoard: React.FC<GoBoardProps> = ({
   const { transformation } = useTransform();
   const { handleMove } = useBoardInput();
   const [hoveredIntersection, setHoveredIntersection] =
-    useState<Coordinate | null>(null);
+    useState<BoardCoordinates | null>(null);
 
   const showHint: boolean = useSelector(
     (state: RootState) => state.settings.showHint
@@ -55,21 +57,22 @@ export const GoBoard: React.FC<GoBoardProps> = ({
     (state: RootState) => state.settings.showCoordinates
   );
 
-  const {
-    spacing,
-    totalBoardWidth,
-    totalBoardHeight,
-    transformCoordinates,
-    getNearestIntersection
-  } = useBoardDimensions({
-    range,
-    availableWidth,
-    availableHeight,
-    showCoordinates
-  });
+  const paddingMin = 10;
+
+  const { delta, renderRange, transformCoordinates, getNearestIntersection } =
+    useBoardDimensions({
+      range,
+      availableWidth,
+      availableHeight,
+      paddingMin,
+      showCoordinates,
+      boardSize
+    });
+
+  const STONE_SIZE = delta * STONE_SCALE;
 
   const handleIntersectionHover = (x: number, y: number) => {
-    const intersection = getNearestIntersection(x, y);
+    const intersection = getNearestIntersection([x, y]);
     setHoveredIntersection(intersection);
   };
 
@@ -90,41 +93,19 @@ export const GoBoard: React.FC<GoBoardProps> = ({
     setHoveredIntersection(null);
   };
 
-  const getColumnLabel = (col: number): string => {
-    if (col >= 8) col++; // Skip 'I'
-    return String.fromCharCode(65 + col); // 65 is 'A' in ASCII
+  const getCoordinateLabel = (type: string, index: number) => {
+    const letters = 'ABCDEFGHJKLMNOPQRSTUVWXYZ'; // Skip 'I'
+    if (type === 'row') return `${index + 1}`;
+    if (type === 'col') return letters[index];
   };
-
-  // const renderCoordinates = (type: string, index: number) => {
-  //   const letters = 'ABCDEFGHJKLMNOPQRSTUVWXYZ'; // Skip 'I'
-  //   if (type === 'row') return `${index + 1}`;
-  //   if (type === 'col') return letters[index];
-  // };
 
   const renderGrid = () => {
     const lines = [];
-    const [rangeStartX, rangeStartY] = transformCoordinates(
-      range.startX,
-      range.startY
-    );
-    const [rangeEndX, rangeEndY] = transformCoordinates(range.endX, range.endY);
-
-    // Calculate how many lines we can fit in the available space
-    const maxLinesLeft = Math.floor(rangeStartX / spacing);
-    const maxLinesRight = Math.floor((totalBoardWidth - rangeEndX) / spacing);
-    const maxLinesTop = Math.floor(rangeStartY / spacing);
-    const maxLinesBottom = Math.floor((totalBoardHeight - rangeEndY) / spacing);
-
-    // Calculate actual start and end coordinates
-    const startX = Math.max(0, range.startX - maxLinesLeft);
-    const endX = Math.min(boardSize - 1, range.endX + maxLinesRight);
-    const startY = Math.max(0, range.startY - maxLinesTop);
-    const endY = Math.min(boardSize - 1, range.endY + maxLinesBottom);
 
     // Vertical lines
-    for (let x = startX; x <= endX; x++) {
-      const [x1, y1] = transformCoordinates(x, startY);
-      const [x2, y2] = transformCoordinates(x, endY);
+    for (let x = renderRange.startX; x <= renderRange.endX; x++) {
+      const [x1, y1] = transformCoordinates([x, renderRange.startY]);
+      const [x2, y2] = transformCoordinates([x, renderRange.endY]);
       lines.push(
         <Line
           key={`v${x}`}
@@ -139,9 +120,9 @@ export const GoBoard: React.FC<GoBoardProps> = ({
     }
 
     // Horizontal lines
-    for (let y = startY; y <= endY; y++) {
-      const [x1, y1] = transformCoordinates(startX, y);
-      const [x2, y2] = transformCoordinates(endX, y);
+    for (let y = renderRange.startY; y <= renderRange.endY; y++) {
+      const [x1, y1] = transformCoordinates([renderRange.startX, y]);
+      const [x2, y2] = transformCoordinates([renderRange.endX, y]);
       lines.push(
         <Line
           key={`h${y}`}
@@ -160,13 +141,12 @@ export const GoBoard: React.FC<GoBoardProps> = ({
 
   const renderStones = () => {
     const stones = [];
-    const stoneSize = spacing * STONE_SCALE;
 
-    for (let y = range.startY; y <= range.endY; y++) {
-      for (let x = range.startX; x <= range.endX; x++) {
+    for (let y = renderRange.startY; y <= renderRange.endY; y++) {
+      for (let x = renderRange.startX; x <= renderRange.endX; x++) {
         const stone = board.get([x, y]);
-        if (stone !== 0) {
-          const [cx, cy] = transformCoordinates(x, y);
+        if (stone && stone !== 0) {
+          const [cx, cy] = transformCoordinates([x, y]);
           const isLastPlayedStone =
             currentNode?.data.B?.[0] === vertexToSgf([x, y]) ||
             currentNode?.data.W?.[0] === vertexToSgf([x, y]);
@@ -174,17 +154,17 @@ export const GoBoard: React.FC<GoBoardProps> = ({
           stones.push(
             <G key={`${x}-${y}`}>
               <SvgImage
-                x={cx - stoneSize / 2}
-                y={cy - stoneSize / 2}
-                width={stoneSize}
-                height={stoneSize}
+                x={cx - STONE_SIZE / 2}
+                y={cy - STONE_SIZE / 2}
+                width={STONE_SIZE}
+                height={STONE_SIZE}
                 href={stone === 1 ? STONE_IMAGES.BLACK : STONE_IMAGES.WHITE}
               />
               {isLastPlayedStone && (
                 <Circle
                   cx={cx}
                   cy={cy}
-                  r={spacing * 0.25}
+                  r={delta * 0.25}
                   stroke={stone === 1 ? 'white' : 'black'}
                   strokeWidth={1.5}
                   fill='none'
@@ -202,18 +182,16 @@ export const GoBoard: React.FC<GoBoardProps> = ({
   const renderGhostStone = () => {
     if (!hoveredIntersection) return null;
 
-    const { x, y } = hoveredIntersection;
-    const [cx, cy] = transformCoordinates(x, y);
-    const stoneSize = spacing * STONE_SCALE;
+    const [cx, cy] = transformCoordinates(hoveredIntersection);
 
-    if (!isValidMove([x, y])) return null;
+    if (!isValidMove(hoveredIntersection)) return null;
 
     return (
       <SvgImage
-        x={cx - stoneSize / 2}
-        y={cy - stoneSize / 2}
-        width={stoneSize}
-        height={stoneSize}
+        x={cx - STONE_SIZE / 2}
+        y={cy - STONE_SIZE / 2}
+        width={STONE_SIZE}
+        height={STONE_SIZE}
         href={currentPlayer === 1 ? STONE_IMAGES.BLACK : STONE_IMAGES.WHITE}
         opacity={0.5}
       />
@@ -237,7 +215,7 @@ export const GoBoard: React.FC<GoBoardProps> = ({
           y >= range.startY &&
           y <= range.endY
         ) {
-          const [cx, cy] = transformCoordinates(x, y);
+          const [cx, cy] = transformCoordinates([x, y]);
           starPoints.push(
             <Circle key={`star-${x}-${y}`} cx={cx} cy={cy} r={3} fill='black' />
           );
@@ -251,26 +229,40 @@ export const GoBoard: React.FC<GoBoardProps> = ({
   const renderHighlightLines = () => {
     if (!hoveredIntersection) return null;
 
-    const { x, y } = hoveredIntersection;
-    const [hx, hy] = transformCoordinates(x, y);
-    const color = isValidMove([x, y]) ? '#00ff00' : '#ff0000';
+    const color = isValidMove(hoveredIntersection) ? '#00ff00' : '#ff0000';
+    const [x1, y1] = transformCoordinates([
+      hoveredIntersection[0],
+      renderRange.startY
+    ]);
+    const [x2, y2] = transformCoordinates([
+      hoveredIntersection[0],
+      renderRange.endY
+    ]);
+    const [x3, y3] = transformCoordinates([
+      renderRange.startX,
+      hoveredIntersection[1]
+    ]);
+    const [x4, y4] = transformCoordinates([
+      renderRange.endX,
+      hoveredIntersection[1]
+    ]);
 
     return (
       <G>
         <Line
-          x1={hx}
-          y1={0}
-          x2={hx}
-          y2={totalBoardHeight}
+          x1={x1}
+          y1={y1}
+          x2={x2}
+          y2={y2}
           stroke={color}
           strokeWidth='2'
           opacity='0.5'
         />
         <Line
-          x1={0}
-          y1={hy}
-          x2={totalBoardWidth}
-          y2={hy}
+          x1={x3}
+          y1={y3}
+          x2={x4}
+          y2={y4}
           stroke={color}
           strokeWidth='2'
           opacity='0.5'
@@ -296,7 +288,7 @@ export const GoBoard: React.FC<GoBoardProps> = ({
         ty >= range.startY &&
         ty <= range.endY
       ) {
-        const [cx, cy] = transformCoordinates(tx, ty);
+        const [cx, cy] = transformCoordinates([tx, ty]);
         const color = type === 'o' ? 'green' : type === 'x' ? 'red' : null;
         if (color) {
           hints.push(
@@ -304,7 +296,7 @@ export const GoBoard: React.FC<GoBoardProps> = ({
               key={`hint-${tx}-${ty}`}
               cx={cx}
               cy={cy}
-              r={spacing * 0.2}
+              r={delta * 0.2}
               fill={color}
               opacity={1}
             />
@@ -320,36 +312,47 @@ export const GoBoard: React.FC<GoBoardProps> = ({
     if (!showCoordinates) return null;
 
     const labels = [];
-    const labelOffset = spacing * 0.75;
+    const labelOffset = delta * 0.75;
+    const letters = 'ABCDEFGHJKLMNOPQRSTUVWXYZ'; // Skip 'I'
 
-    for (let x = range.startX; x <= range.endX; x++) {
-      const [cx] = transformCoordinates(x, range.startY);
-      const [_, topY] = transformCoordinates(range.startX, range.startY);
-      const [__, bottomY] = transformCoordinates(range.startX, range.endY);
-      const label = getColumnLabel(x);
+    // Only render labels for columns within renderRange
+    for (let x = renderRange.startX; x <= renderRange.endX; x++) {
+      const [cx, _] = transformCoordinates([x, renderRange.startY]);
+      const label = letters[x];
 
-      labels.push(
-        <SvgText
-          key={`top-${x}`}
-          x={cx}
-          y={topY - labelOffset}
-          textAnchor='middle'
-          fill='black'
-          fontSize={spacing * 0.5}
-        >
-          {label}
-        </SvgText>,
-        <SvgText
-          key={`bottom-${x}`}
-          x={cx}
-          y={bottomY + labelOffset}
-          textAnchor='middle'
-          fill='black'
-          fontSize={spacing * 0.5}
-        >
-          {label}
-        </SvgText>
-      );
+      // Top labels - only if we're at the top edge of the board
+      if (renderRange.startY === 0) {
+        const [_, topY] = transformCoordinates([x, renderRange.startY]);
+        labels.push(
+          <SvgText
+            key={`top-${x}`}
+            x={cx}
+            y={topY - labelOffset}
+            textAnchor='middle'
+            fill='black'
+            fontSize={delta * 0.5}
+          >
+            {label}
+          </SvgText>
+        );
+      }
+
+      // Bottom labels - only if we're at the bottom edge of the board
+      if (renderRange.endY === boardSize - 1) {
+        const [_, bottomY] = transformCoordinates([x, renderRange.endY]);
+        labels.push(
+          <SvgText
+            key={`bottom-${x}`}
+            x={cx}
+            y={bottomY + labelOffset}
+            textAnchor='middle'
+            fill='black'
+            fontSize={delta * 0.5}
+          >
+            {label}
+          </SvgText>
+        );
+      }
     }
 
     return labels;
@@ -359,37 +362,48 @@ export const GoBoard: React.FC<GoBoardProps> = ({
     if (!showCoordinates) return null;
 
     const labels = [];
-    const xLeft = -spacing * 0.2; // Left of the board
-    const xRight = totalBoardWidth + spacing * 0.2; // Right of the board
+    const labelOffset = delta * 0.75;
 
-    for (let y = range.startY; y <= range.endY; y++) {
-      const [, cy] = transformCoordinates(0, y);
-      const label = (y + 1).toString();
+    // Only render labels for rows within renderRange
+    for (let y = renderRange.startY; y <= renderRange.endY; y++) {
+      const [_, cy] = transformCoordinates([renderRange.startX, y]);
+      const label = `${y + 1}`;
 
-      labels.push(
-        <SvgText
-          key={`left-${y}`}
-          x={xLeft}
-          y={cy}
-          textAnchor='middle'
-          alignmentBaseline='middle'
-          fill='black'
-          fontSize={spacing * 0.5}
-        >
-          {label}
-        </SvgText>,
-        <SvgText
-          key={`right-${y}`}
-          x={xRight}
-          y={cy}
-          textAnchor='middle'
-          alignmentBaseline='middle'
-          fill='black'
-          fontSize={spacing * 0.5}
-        >
-          {label}
-        </SvgText>
-      );
+      // Left labels - only if we're at the left edge of the board
+      if (renderRange.startX === 0) {
+        const [leftX] = transformCoordinates([renderRange.startX, y]);
+        labels.push(
+          <SvgText
+            key={`left-${y}`}
+            x={leftX - labelOffset}
+            y={cy}
+            textAnchor='middle'
+            alignmentBaseline='middle'
+            fill='black'
+            fontSize={delta * 0.5}
+          >
+            {label}
+          </SvgText>
+        );
+      }
+
+      // Right labels - only if we're at the right edge of the board
+      if (renderRange.endX === boardSize - 1) {
+        const [rightX] = transformCoordinates([renderRange.endX, y]);
+        labels.push(
+          <SvgText
+            key={`right-${y}`}
+            x={rightX + labelOffset}
+            y={cy}
+            textAnchor='middle'
+            alignmentBaseline='middle'
+            fill='black'
+            fontSize={delta * 0.5}
+          >
+            {label}
+          </SvgText>
+        );
+      }
     }
 
     return labels;
@@ -398,7 +412,7 @@ export const GoBoard: React.FC<GoBoardProps> = ({
   const renderLabelsAndMarks = () => {
     const markups: React.ReactElement[] = [];
     const MARK_SCALE = 0.6; // Adjust size of marks relative to spacing
-    const LABEL_FONT_SIZE = spacing * 0.7; // Adjust font size relative to spacing
+    const LABEL_FONT_SIZE = delta * 0.7; // Adjust font size relative to spacing
 
     // Handle labels (LB)
     if (currentNode?.data.LB) {
@@ -416,7 +430,7 @@ export const GoBoard: React.FC<GoBoardProps> = ({
           ty >= range.startY &&
           ty <= range.endY
         ) {
-          const [cx, cy] = transformCoordinates(tx, ty);
+          const [cx, cy] = transformCoordinates([tx, ty]);
           const stone = board.get([tx, ty]);
 
           markups.push(
@@ -451,9 +465,9 @@ export const GoBoard: React.FC<GoBoardProps> = ({
           ty >= range.startY &&
           ty <= range.endY
         ) {
-          const [cx, cy] = transformCoordinates(tx, ty);
+          const [cx, cy] = transformCoordinates([tx, ty]);
           const stone = board.get([tx, ty]);
-          const markSize = spacing * MARK_SCALE;
+          const markSize = delta * MARK_SCALE;
           const markColor =
             stone !== 0 ? (stone === 1 ? 'white' : 'black') : 'black';
 
@@ -539,20 +553,61 @@ export const GoBoard: React.FC<GoBoardProps> = ({
     return markups;
   };
 
+  const renderRangeDebug = () => {
+    const [startX, startY] = transformCoordinates([range.startX, range.startY]);
+    const [endX, endY] = transformCoordinates([range.endX, range.endY]);
+
+    return (
+      <Rect
+        x={startX}
+        y={startY}
+        width={endX - startX}
+        height={endY - startY}
+        stroke='blue'
+        strokeWidth={4}
+        fill='none'
+      />
+    );
+  };
+
+  const renderRenderRangeDebug = () => {
+    const [startX, startY] = transformCoordinates([
+      renderRange.startX,
+      renderRange.startY
+    ]);
+    const [endX, endY] = transformCoordinates([
+      renderRange.endX,
+      renderRange.endY
+    ]);
+
+    return (
+      <Rect
+        x={startX}
+        y={startY}
+        width={endX - startX}
+        height={endY - startY}
+        stroke='red'
+        strokeWidth={5}
+        fill='none'
+        opacity={0.5}
+      />
+    );
+  };
+
   return (
     // <Profiler id='GoBoard' onRender={profilerRender}>
     <View
       style={[
         styles.container,
         {
-          width: totalBoardWidth,
-          height: totalBoardHeight
+          width: availableWidth,
+          height: availableHeight
         }
       ]}
     >
       <Svg
-        width={totalBoardWidth}
-        height={totalBoardHeight}
+        width={availableWidth}
+        height={availableHeight}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -567,6 +622,8 @@ export const GoBoard: React.FC<GoBoardProps> = ({
           {renderGhostStone()}
           {renderColumnLabels()}
           {renderRowLabels()}
+          {DEBUG_RANGES && renderRangeDebug()}
+          {DEBUG_RANGES && renderRenderRangeDebug()}
         </G>
       </Svg>
     </View>
