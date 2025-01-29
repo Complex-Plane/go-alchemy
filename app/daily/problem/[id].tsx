@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { View, StyleSheet, useWindowDimensions } from 'react-native';
-// import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import ErrorBoundary from 'react-native-error-boundary';
 import {
   SafeAreaView,
@@ -17,7 +16,6 @@ import { useDispatch } from 'react-redux';
 import { resetShowHint } from '@/store/settingsSlice';
 import { TransformProvider } from '@/contexts/TransformContext';
 import { TransformationPanel } from '@/components/TransformPanel';
-import { SGF_FILES } from '@/assets/problems';
 
 // Route: '/problems/problem/[id]'
 

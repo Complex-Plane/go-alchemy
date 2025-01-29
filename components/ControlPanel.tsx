@@ -3,38 +3,33 @@ import { View, StyleSheet } from 'react-native';
 import { Button } from '@rneui/themed';
 import { useGameTree } from '@/contexts/GameTreeContext';
 import ToggleShowHint from './ToggleShowHint';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
+import { useProblemContext } from '@/contexts/ProblemContext';
 
 export const ControlPanel: React.FC = () => {
   const { navigate, canNavigate } = useGameTree();
   const router = useRouter();
-  const { id, count, category } = useLocalSearchParams();
-
-  const currentId = parseInt(id as string);
-  const totalProblems = parseInt(count as string);
+  const { problemIds, category, currentProblemIndex, setCurrentProblemIndex } =
+    useProblemContext();
 
   const handlePreviousProblem = () => {
-    if (currentId > 0) {
+    if (currentProblemIndex > 0) {
+      const newIndex = currentProblemIndex - 1;
+      setCurrentProblemIndex(newIndex);
       router.push({
-        pathname: '/problems/problem/[id]',
-        params: {
-          id: currentId - 1,
-          count: totalProblems,
-          category
-        }
+        pathname: category ? '/problems/problem/[id]' : '/daily/problem/[id]',
+        params: { id: problemIds[newIndex], category }
       });
     }
   };
 
   const handleNextProblem = () => {
-    if (currentId < totalProblems - 1) {
+    if (currentProblemIndex < problemIds.length - 1) {
+      const newIndex = currentProblemIndex + 1;
+      setCurrentProblemIndex(newIndex);
       router.push({
-        pathname: '/problems/problem/[id]',
-        params: {
-          id: currentId + 1,
-          count: totalProblems,
-          category
-        }
+        pathname: category ? '/problems/problem/[id]' : '/daily/problem/[id]',
+        params: { id: problemIds[newIndex] }
       });
     }
   };
@@ -45,7 +40,7 @@ export const ControlPanel: React.FC = () => {
         <Button
           icon={{ name: 'skip-previous', color: 'white' }}
           onPress={handlePreviousProblem}
-          disabled={currentId === 0}
+          disabled={currentProblemIndex === 0}
           type='clear'
         />
         <View style={styles.centerButtons}>
@@ -71,7 +66,7 @@ export const ControlPanel: React.FC = () => {
         <Button
           icon={{ name: 'skip-next', color: 'white' }}
           onPress={handleNextProblem}
-          disabled={currentId === totalProblems - 1}
+          disabled={currentProblemIndex === problemIds.length - 1}
           type='clear'
         />
       </View>

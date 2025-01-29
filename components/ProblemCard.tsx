@@ -4,7 +4,8 @@ import {
   Image,
   StyleSheet,
   TouchableOpacity,
-  Dimensions
+  Dimensions,
+  ImageSourcePropType
 } from 'react-native';
 import { Text } from '@rneui/themed';
 import { Problem } from '@/types/sgf';
@@ -27,7 +28,7 @@ export const ProblemCard: React.FC<ProblemCardProps> = ({
       <View style={styles.imageContainer}>
         <View style={styles.placeholder} />
         <Image
-          source={problem.image}
+          source={problem.image as ImageSourcePropType}
           style={styles.image}
           resizeMode='cover'
           defaultSource={defaultImageSource}

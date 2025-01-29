@@ -1,17 +1,15 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  View,
   FlatList,
-  Image,
   StyleSheet,
   Dimensions,
-  TouchableOpacity,
   ActivityIndicator
 } from 'react-native';
-import { Card, Text } from '@rneui/themed';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SGF_FILES } from '@/assets/problems';
 import { Problem } from '@/types/sgf';
+import { useProblemContext } from '@/contexts/ProblemContext';
+import { ProblemCard } from '@/components/ProblemCard';
 
 // Route: '/problems/[category]'
 
@@ -21,54 +19,43 @@ const windowWidth = Dimensions.get('window').width;
 // const itemWidth =
 //   (windowWidth - itemPadding * 2 * (itemsPerRow - 1)) / itemsPerRow;
 const itemWidth = (windowWidth - 56) / 4; // 56 = padding (16) * 2 + gap between items (8) * 3
-const defaultImageSource = require('@/assets/images/placeholder.png');
 
 export default function ProblemList() {
   const router = useRouter();
   const { category } = useLocalSearchParams();
   const [isLoading, setIsLoading] = useState(true);
+  const { setProblemContext } = useProblemContext();
 
   const problems = category ? SGF_FILES[category as string]?.problems : [];
 
   useEffect(() => {
     if (problems.length > 0) {
+      setProblemContext(
+        problems.map((p) => p.id),
+        category as string
+      );
       setIsLoading(false);
     }
-  }, [problems]);
+  }, [problems, category]);
 
   const renderItem = useCallback(
     ({ item }: { item: Problem }) => {
       const handlePress = () => {
         router.push({
           pathname: '/problems/problem/[id]',
-          params: { id: item.id, count: problems.length, category }
+          params: { id: item.id, category }
         });
       };
 
-      return (
-        <TouchableOpacity style={styles.itemContainer} onPress={handlePress}>
-          <View style={styles.imageContainer}>
-            <View style={styles.placeholder} />
-            <Image
-              source={item.image}
-              style={styles.image}
-              resizeMode='cover'
-              defaultSource={defaultImageSource}
-            />
-          </View>
-          <Text style={styles.name} numberOfLines={1}>
-            # {item.id + 1}
-          </Text>
-        </TouchableOpacity>
-      );
+      return <ProblemCard problem={item} onPress={handlePress} />;
     },
-    [category, router]
+    [router]
   );
 
   const keyExtractor = useCallback((item: Problem) => item.id.toString(), []);
 
   const getItemLayout = useCallback(
-    (_, index: number) => ({
+    (_: any, index: number) => ({
       length: itemWidth + styles.row.marginBottom,
       offset: (itemWidth + styles.row.marginBottom) * Math.floor(index / 4),
       index
