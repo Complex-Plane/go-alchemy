@@ -109,7 +109,7 @@ export default function ProblemScreen() {
           <GameProvider>
             <SafeAreaView style={styles.container}>
               {/* Board transformation controls (currently disabled) */}
-              {/* <TransformationPanel /> */}
+              <TransformationPanel />
 
               {/* Problem description and move feedback */}
               <CommentDisplay />

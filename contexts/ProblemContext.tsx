@@ -11,7 +11,13 @@
  * @version 0.1.2
  */
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useCallback
+} from 'react';
 
 /**
  * Problem Context Interface
@@ -86,11 +92,14 @@ export const ProblemProvider: React.FC<{ children: ReactNode }> = ({
    * @param {number[]} ids - Array of problem IDs to make available for navigation
    * @param {string} [cat] - Optional category name for contextual information
    */
-  const setProblemContext = (ids: number[], cat?: string) => {
-    setProblemIds(ids);
-    setCategory(cat);
-    setCurrentProblemIndex(0); // Reset to first problem when context changes
-  };
+  const setProblemContext = useCallback(
+    (ids: number[], cat?: string) => {
+      setProblemIds(ids);
+      setCategory(cat);
+      setCurrentProblemIndex(0); // Reset to first problem when context changes
+    },
+    [setProblemIds, setCategory, setCurrentProblemIndex]
+  );
 
   /**
    * Context Value
