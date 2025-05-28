@@ -27,6 +27,23 @@ interface GameTreeProviderProps {
   id: string | number;
 }
 
+/**
+ * GameTreeContextType - Interface for the game tree context
+ *
+ * @interface
+ * @property {boolean} isLoading - Whether the SGF file is being loaded
+ * @property {GameTreeType|null} gameTree - The immutable game tree instance
+ * @property {GameTreeNode|null} currentNode - Current position in the tree
+ * @property {Function} setCurrentNode - Navigate to a specific node
+ * @property {GameTreeNode|null} startingNode - The initial problem position
+ * @property {Function} setStartingNode - Set the starting position
+ * @property {string|null} currentComment - Comment for the current node
+ * @property {Function} addMove - Add a move to the tree
+ * @property {Object} navigate - Navigation methods
+ * @property {Object} canNavigate - Navigation availability flags
+ * @property {number} boardSize - Size of the Go board
+ * @property {BoardRange} range - Visible board area for partial boards
+ */
 type GameTreeContextType = {
   isLoading: boolean;
   gameTree: GameTreeType | null;
@@ -54,6 +71,15 @@ const GameTreeContext = createContext<GameTreeContextType | undefined>(
   undefined
 );
 
+/**
+ * useGameTree - Hook to access the game tree context
+ *
+ * Provides access to SGF game tree navigation and manipulation.
+ * Must be used within a GameTreeProvider.
+ *
+ * @returns {GameTreeContextType} The game tree context
+ * @throws {Error} If used outside of GameTreeProvider
+ */
 export const useGameTree = () => {
   const context = useContext(GameTreeContext);
   if (!context)
@@ -104,7 +130,7 @@ function useGameTreeState(category: string, id: string | number) {
   }, [gameTree, currentNode, startingNode]);
 
   useEffect(() => {
-    async function loadProblem() {
+    const loadProblem = async () => {
       try {
         // debugLog('GameTree', 'Attempting to load problem', { category, id });
         if (category && id) {
@@ -155,8 +181,9 @@ function useGameTreeState(category: string, id: string | number) {
         }
       } catch (error) {
         console.error('Error loading problem:', error);
+        setIsLoading(false);
       }
-    }
+    };
 
     loadProblem();
   }, [category, id]);
@@ -181,6 +208,18 @@ function useGameTreeState(category: string, id: string | number) {
   //     }
   //   }, [currentNode, gameTree, playerColor, autoPlayDelay]);
 
+  /**
+   * Add a move to the game tree
+   *
+   * This method:
+   * 1. Checks if the move matches any variation
+   * 2. Navigates to the matching variation (correct move)
+   * 3. Creates a new branch for incorrect moves
+   * 4. Updates the current node
+   *
+   * @param {Vertex} vertex - The move coordinates
+   * @param {Sign} currentPlayer - The player making the move
+   */
   const addMove = useCallback(
     (vertex: Vertex, currentPlayer: Sign) => {
       if (!gameTree || !currentNode) {
@@ -362,6 +401,29 @@ function useGameTreeState(category: string, id: string | number) {
   };
 }
 
+/**
+ * GameTreeProvider - Context provider for SGF game tree management
+ *
+ * This provider handles:
+ * - Loading SGF files from the problems directory
+ * - Parsing and managing the immutable game tree
+ * - Navigation through the game tree (variations)
+ * - Move validation against the correct solution
+ * - Comment extraction for move feedback
+ * - Board range calculation for partial board problems
+ *
+ * The game tree follows SGF (Smart Game Format) structure:
+ * - Each node contains moves, comments, and board markup
+ * - Variations represent different move sequences
+ * - The first variation is typically the correct solution
+ *
+ * @component
+ * @param {GameTreeProviderProps} props - Component props
+ * @param {React.ReactNode} props.children - Child components
+ * @param {string} props.category - Problem category
+ * @param {string|number} props.id - Problem ID
+ * @returns {JSX.Element} Provider component
+ */
 export const GameTreeProvider: React.FC<GameTreeProviderProps> = ({
   children,
   category,

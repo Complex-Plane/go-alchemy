@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Go Alchemy API Documentation</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.6;
+      padding: 2rem;
+      max-width: 900px;
+      margin: auto;
+      background-color: #fff;
+      color: #24292e;
+    }
+
+    h1, h2, h3, h4 {
+      border-bottom: 1px solid #eaecef;
+      padding-bottom: 0.3em;
+      margin-top: 1.5em;
+    }
+
+    pre {
+      background-color: #f6f8fa;
+      padding: 1em;
+      border-radius: 6px;
+      overflow: auto;
+      border: 1px solid #d1d5da;
+    }
+
+    code {
+      font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
+      font-size: 85%;
+      background-color: #f6f8fa;
+      padding: 0.2em 0.4em;
+      border-radius: 6px;
+    }
+
+    pre code {
+      padding: 0;
+      background-color: transparent;
+    }
+
+    ul {
+      padding-left: 2em;
+    }
+
+    a {
+      color: #0366d6;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    strong {
+      font-weight: 600;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid #eaecef;
+      margin: 2em 0;
+    }
+
+    blockquote {
+      padding: 0.5em 1em;
+      margin: 0;
+      color: #6a737d;
+      border-left: 0.25em solid #dfe2e5;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Go Alchemy API Documentation</h1>
+<p>This document provides an overview of the main APIs and components used in the Go Alchemy application.</p>
+
+<h2>Table of Contents</h2>
+<ul>
+  <li><a href="#core-contexts">Core Contexts</a></li>
+  <li><a href="#components">Components</a></li>
+  <li><a href="#state-management">State Management</a></li>
+  <li><a href="#utilities">Utilities</a></li>
+  <li><a href="#types">Types</a></li>
+</ul>
+
+<h2 id="core-contexts">Core Contexts</h2>
+
+<h3>GameContext</h3>
+<p>Manages the Go game logic and board state.</p>
+
+<pre><code class="language-typescript">
+interface GameContextType {
+  board: Board;
+  boardState: BoardState;
+  currentPlayer: StoneColor;
+  boardSize: number;
+  placeStone: (vertex: Vertex) =&gt; Promise&lt;boolean&gt;;
+  isValidMove: (vertex: Vertex) =&gt; boolean;
+  autoPlayOpponent: boolean;
+  setAutoPlayOpponent: (value: boolean) =&gt; void;
+  autoPlayDelay: number;
+  setAutoPlayDelay: (value: number) =&gt; void;
+}
+</code></pre>
+
+<p><strong>Usage:</strong></p>
+<pre><code class="language-javascript">
+const { board, placeStone, currentPlayer } = useGame();
+</code></pre>
+
+<h3>GameTreeContext</h3>
+<p>Handles SGF game tree navigation and problem management.</p>
+
+<pre><code class="language-typescript">
+interface GameTreeContextType {
+  isLoading: boolean;
+  gameTree: GameTreeType | null;
+  currentNode: GameTreeNode | null;
+  startingNode: GameTreeNode | null;
+  currentComment: string | null;
+  addMove: (vertex: Vertex, currentPlayer: Sign) =&gt; void;
+  navigate: {
+    forward: () =&gt; void;
+    backward: () =&gt; void;
+    first: () =&gt; void;
+    last: () =&gt; void;
+  };
+  canNavigate: {
+    forward: boolean;
+    backward: boolean;
+  };
+  boardSize: number;
+  range: BoardRange;
+}
+</code></pre>
+
+<p><strong>Usage:</strong></p>
+<pre><code class="language-javascript">
+const { currentNode, navigate, canNavigate } = useGameTree();
+</code></pre>
+
+<h3>TransformContext</h3>
+<p>Manages board transformations (rotation, mirroring, color inversion).</p>
+
+<pre><code class="language-typescript">
+interface TransformContextType {
+  transformation: BoardTransformation;
+  setTransformation: (transform: BoardTransformation) =&gt; void;
+  randomizeTransformation: () =&gt; void;
+}
+</code></pre>
+
+<h3>ProblemContext</h3>
+<p>Manages problem sets and navigation between problems.</p>
+
+<pre><code class="language-typescript">
+interface ProblemContextType {
+  problemIds: string[];
+  category: string;
+  currentProblemIndex: number;
+  setCurrentProblemIndex: (index: number) =&gt; void;
+}
+</code></pre>
+
+<h2 id="components">Components</h2>
+
+<h3>GoBoard</h3>
+<p>The main game board component that renders the Go board using SVG.</p>
+
+<p><strong>Props:</strong></p>
+<pre><code class="language-typescript">
+interface GoBoardProps {
+  availableWidth: number;
+  availableHeight: number;
+}
+</code></pre>
+
+<p><strong>Features:</strong></p>
+<ul>
+  <li>Touch interaction for stone placement</li>
+  <li>Board grid and star points rendering</li>
+  <li>Stone display with realistic images</li>
+  <li>Board marks (circles, triangles, squares, X marks)</li>
+  <li>Optional coordinate labels</li>
+  <li>Hint highlighting</li>
+  <li>Hover effects</li>
+</ul>
+
+<h3>ControlPanel</h3>
+<p>Navigation controls for problems and moves.</p>
+
+<p><strong>Features:</strong></p>
+<ul>
+  <li>Problem navigation (previous/next)</li>
+  <li>Move navigation (forward/backward/first/last)</li>
+  <li>Hint toggle</li>
+  <li>Responsive button states</li>
+</ul>
+
+<h3>CommentDisplay</h3>
+<p>Shows problem descriptions and move feedback.</p>
+
+<p><strong>Features:</strong></p>
+<ul>
+  <li>Displays SGF comments</li>
+  <li>Success/failure messages</li>
+  <li>Problem instructions</li>
+</ul>
+
+<h2 id="state-management">State Management</h2>
+
+<h3>Redux Store Structure</h3>
+<pre><code class="language-typescript">
+interface RootState {
+  date: DateState;
+  settings: SettingsState;
+  user: UserState;
+}
+</code></pre>
+
+<h3>Settings Slice</h3>
+<pre><code class="language-typescript">
+interface SettingsState {
+  darkMode: boolean;
+  sfxEnabled: boolean;
+  hapticsEnabled: boolean;
+  showHint: boolean;
+  showCoordinates: boolean;
+  randomizeBoard: boolean;
+}
+</code></pre>
+
+<p><strong>Actions:</strong></p>
+<ul>
+  <li><code>setDarkMode(boolean)</code></li>
+  <li><code>toggleSfx()</code></li>
+  <li><code>toggleHaptics()</code></li>
+  <li><code>toggleShowHint()</code></li>
+  <li><code>resetShowHint()</code></li>
+  <li><code>toggleShowCoordinates()</code></li>
+  <li><code>toggleRandomizeBoard()</code></li>
+  <li><code>resetSettings()</code></li>
+</ul>
+
+<h2 id="utilities">Utilities</h2>
+
+<h3>sgfUtils</h3>
+<p>Coordinate conversion utilities.</p>
+
+<pre><code class="language-typescript">
+// Convert SGF coordinates to vertex
+sgfToVertex(sgfCoord: string): Vertex
+// Example: sgfToVertex("pd") =&gt; [15, 3]
+
+// Convert vertex to SGF coordinates
+vertexToSgf(vertex: Vertex): string
+// Example: vertexToSgf([15, 3]) =&gt; "pd"
+</code></pre>
+
+<h3>sgfLoader</h3>
+<p>Load SGF files from the app bundle.</p>
+
+<pre><code class="language-typescript">
+loadSgfFromAssets(category: string, filename: number): Promise&lt;string&gt;
+</code></pre>
+
+<h3>boardTransformation</h3>
+<p>Transform vertices for board rotation/mirroring.</p>
+
+<pre><code class="language-typescript">
+transformVertex(
+  vertex: Vertex,
+  transformation: BoardTransformation,
+  boardSize: number,
+  inverse?: boolean
+): Vertex
+</code></pre>
+
+<h2 id="types">Types</h2>
+
+<h3>Board Types</h3>
+<pre><code class="language-typescript">
+type Stone = 0 | 1 | -1;
+type BoardState = Stone[];
+type Vertex = [number, number];
+type Sign = -1 | 0 | 1;
+
+interface BoardRange {
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+}
+
+interface BoardTransformation {
+  rotate: number;
+  flipX: boolean;
+  flipY: boolean;
+  invertColors: boolean;
+}
+</code></pre>
+
+<h3>SGF Types</h3>
+<pre><code class="language-typescript">
+interface SGFProblem {
+  id: string;
+  filename: string;
+  category?: string;
+  difficulty?: string;
+  description?: string;
+}
+</code></pre>
+
+<h2>Navigation Routes</h2>
+<p>The app uses Expo Router with the following main routes:</p>
+<ul>
+  <li><code>/</code> - Home screen</li>
+  <li><code>/problems</code> - Problem category selection</li>
+  <li><code>/problems/[category]</code> - Problems in a category</li>
+  <li><code>/problems/problem/[id]</code> - Individual problem viewer</li>
+  <li><code>/daily</code> - Daily problems</li>
+  <li><code>/daily/problem/[id]</code> - Daily problem viewer</li>
+  <li><code>/settings</code> - App settings</li>
+  <li><code>/about</code> - About page</li>
+</ul>
+
+<h2>Best Practices</h2>
+<ol>
+  <li><strong>Context Usage</strong>: Always use contexts within their providers</li>
+  <li><strong>Type Safety</strong>: Use TypeScript types for all props and state</li>
+  <li><strong>Performance</strong>: Use React.memo and useCallback for expensive renders</li>
+  <li><strong>Error Handling</strong>: Wrap components in ErrorBoundary</li>
+  <li><strong>State Updates</strong>: Use Redux actions for settings, contexts for game state</li>
+</ol>
+
+<h2>Examples</h2>
+
+<h3>Placing a Stone</h3>
+<pre><code class="language-javascript">
+const { placeStone, isValidMove } = useGame();
+
+const handleMove = async (vertex) =&gt; {
+  if (isValidMove(vertex)) {
+    const success = await placeStone(vertex);
+    if (success) {
+      console.log('Move placed successfully');
+    }
+  }
+};
+</code></pre>
+
+<h3>Navigating Problems</h3>
+<pre><code class="language-javascript">
+const { navigate, canNavigate } = useGameTree();
+
+if (canNavigate.forward) {
+  navigate.forward();
+}
+
+navigate.first();
+</code></pre>
+
+<h3>Accessing Settings</h3>
+<pre><code class="language-javascript">
+const dispatch = useDispatch();
+const showCoordinates = useSelector(state =&gt; state.settings.showCoordinates);
+
+dispatch(toggleShowCoordinates());
+</code></pre>
+
+</body>
+</html>

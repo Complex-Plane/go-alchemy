@@ -23,22 +23,59 @@ import { useTransform } from '@/contexts/TransformContext';
 
 const DEBUG_RANGES = true;
 
+// Stone image assets
 const STONE_IMAGES = {
   BLACK: require('@/assets/images/black_stone.png'),
   WHITE: require('@/assets/images/white_stone.png')
 } as const;
+
+// Stone size relative to intersection spacing
 const STONE_SCALE = 0.94;
 
+/**
+ * Mark type for board annotations (circles, triangles, squares, X marks)
+ */
 type Mark = {
   type: 'CR' | 'TR' | 'SQ' | 'MA';
   coordinate: string;
 };
 
+/**
+ * Props for the GoBoard component
+ */
 type GoBoardProps = {
   availableWidth: number;
   availableHeight: number;
 };
 
+/**
+ * GoBoard - Interactive Go game board component
+ *
+ * This component renders a Go board using SVG, handling:
+ * - Board grid rendering with proper spacing
+ * - Stone placement and display
+ * - Touch/click interaction for moves
+ * - Board marks and annotations
+ * - Coordinate labels (optional)
+ * - Hint highlighting
+ * - Board transformations (rotation/mirroring)
+ *
+ * The board automatically adjusts its size and visible area based on:
+ * - Available screen space
+ * - Problem's board range (partial board support)
+ * - Coordinate display settings
+ *
+ * Touch interaction flow:
+ * 1. Touch start/move updates the hovered intersection
+ * 2. Touch end places a stone if the move is valid
+ * 3. The game context handles move validation and updates
+ *
+ * @component
+ * @param {GoBoardProps} props - Component props
+ * @param {number} props.availableWidth - Available width for the board
+ * @param {number} props.availableHeight - Available height for the board
+ * @returns {JSX.Element} The rendered Go board
+ */
 export const GoBoard: React.FC<GoBoardProps> = ({
   availableWidth,
   availableHeight
@@ -50,6 +87,7 @@ export const GoBoard: React.FC<GoBoardProps> = ({
   const [hoveredIntersection, setHoveredIntersection] =
     useState<BoardCoordinates | null>(null);
 
+  // Get display settings from Redux store
   const showHint: boolean = useSelector(
     (state: RootState) => state.settings.showHint
   );
@@ -59,6 +97,7 @@ export const GoBoard: React.FC<GoBoardProps> = ({
 
   const paddingMin = 10;
 
+  // Calculate board dimensions and coordinate transformations
   const { delta, renderRange, transformCoordinates, getNearestIntersection } =
     useBoardDimensions({
       range,
@@ -71,6 +110,10 @@ export const GoBoard: React.FC<GoBoardProps> = ({
 
   const STONE_SIZE = delta * STONE_SCALE;
 
+  /**
+   * Handle touch/mouse hover over board
+   * Updates the hovered intersection for visual feedback
+   */
   const handleIntersectionHover = (x: number, y: number) => {
     const intersection = getNearestIntersection([x, y]);
     setHoveredIntersection(intersection);
@@ -93,6 +136,10 @@ export const GoBoard: React.FC<GoBoardProps> = ({
     setHoveredIntersection(null);
   };
 
+  /**
+   * Render the board grid lines
+   * Only renders lines within the visible range for performance
+   */
   const renderGrid = useCallback(() => {
     const lines = [];
 
@@ -133,6 +180,10 @@ export const GoBoard: React.FC<GoBoardProps> = ({
     return lines;
   }, [delta, renderRange, transformation]);
 
+  /**
+   * Render stones on the board
+   * Uses image assets for realistic stone appearance
+   */
   const renderStones = () => {
     const stones = [];
 
@@ -192,6 +243,10 @@ export const GoBoard: React.FC<GoBoardProps> = ({
     );
   };
 
+  /**
+   * Render star points (hoshi) on the board
+   * Star points are the marked intersections on standard board positions
+   */
   const renderStarPoints = () => {
     const starPoints = [];
     const starPositions =
@@ -220,6 +275,9 @@ export const GoBoard: React.FC<GoBoardProps> = ({
     return starPoints;
   };
 
+  /**
+   * Render hover effect for touch interaction
+   */
   const renderHighlightLines = () => {
     if (!hoveredIntersection) return null;
 
@@ -265,6 +323,9 @@ export const GoBoard: React.FC<GoBoardProps> = ({
     );
   };
 
+  /**
+   * Render hint highlighting for the next move
+   */
   const renderHints = () => {
     if (!showHint || !currentNode?.data.LB) return null;
 
@@ -445,7 +506,10 @@ export const GoBoard: React.FC<GoBoardProps> = ({
       });
     }
 
-    // Helper function to render marks
+    /**
+     * Render board marks (circles, triangles, squares, X marks)
+     * These are used for annotations and problem hints
+     */
     const renderMark = (marks: string[] | undefined, type: Mark['type']) => {
       if (!marks) return;
 

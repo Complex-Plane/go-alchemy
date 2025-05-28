@@ -8,7 +8,8 @@ import {
   PAUSE,
   PERSIST,
   PURGE,
-  REGISTER
+  REGISTER,
+  MigrationManifest
 } from 'redux-persist';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import dateReducer from './dateSlice';
@@ -17,7 +18,26 @@ import userReducer from './userSlice';
 
 import benchmarkMiddleware from '../middleware/benchmarkMiddleware';
 
-const migrations = {
+/**
+ * Redux Store Configuration
+ *
+ * This file sets up the Redux store with:
+ * - Redux Toolkit for simplified Redux usage
+ * - Redux Persist for state persistence across app launches
+ * - AsyncStorage as the persistence backend
+ * - Custom middleware for performance monitoring
+ *
+ * The store manages three main state slices:
+ * - date: Tracks daily problem completion
+ * - settings: User preferences and app configuration
+ * - user: User progress and statistics
+ */
+
+/**
+ * Migration configuration for Redux Persist
+ * Handles state structure changes between app versions
+ */
+const migrations: MigrationManifest = {
   0: (state) => {
     // migration clear out device state
     return {
@@ -28,7 +48,7 @@ const migrations = {
   1: (state) => {
     // migration to keep only device state
     return {
-      device: state.device
+      device: state?.device
     };
   }
 };
@@ -60,6 +80,13 @@ export const store = configureStore({
 
 export const persistor = persistStore(store);
 
+/**
+ * Utility function to clear all persisted storage
+ * Useful for debugging and resetting app state
+ *
+ * @async
+ * @returns {Promise<void>}
+ */
 export const clearStorage = async () => {
   try {
     await AsyncStorage.clear();
@@ -70,5 +97,8 @@ export const clearStorage = async () => {
   }
 };
 
+/**
+ * TypeScript types for Redux usage
+ */
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

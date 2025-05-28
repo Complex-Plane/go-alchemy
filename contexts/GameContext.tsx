@@ -26,6 +26,21 @@ type StoneColor = Sign; // -1 for white, 1 for black, 0 for empty
 export type { Vertex, Sign };
 export type { Board };
 
+/**
+ * GameContextType - Interface for the game context
+ *
+ * @interface
+ * @property {Board} board - The current Go board instance
+ * @property {BoardState} boardState - 2D array representing stone positions
+ * @property {StoneColor} currentPlayer - Current player to move (1 for black, -1 for white)
+ * @property {number} boardSize - Size of the board (usually 19)
+ * @property {Function} placeStone - Function to place a stone at a vertex
+ * @property {Function} isValidMove - Check if a move is valid
+ * @property {boolean} autoPlayOpponent - Whether to auto-play opponent moves
+ * @property {Function} setAutoPlayOpponent - Toggle auto-play
+ * @property {number} autoPlayDelay - Delay for auto-play moves in ms
+ * @property {Function} setAutoPlayDelay - Set auto-play delay
+ */
 interface GameContextType {
   board: Board;
   boardState: BoardState;
@@ -41,6 +56,15 @@ interface GameContextType {
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
+/**
+ * useGame - Hook to access the game context
+ *
+ * Provides access to the current game state and methods for interacting
+ * with the Go board. Must be used within a GameProvider.
+ *
+ * @returns {GameContextType} The game context
+ * @throws {Error} If used outside of GameProvider
+ */
 export const useGame = () => {
   const context = useContext(GameContext);
   if (!context) {
@@ -49,6 +73,29 @@ export const useGame = () => {
   return context;
 };
 
+/**
+ * GameProvider - Context provider for Go game state and logic
+ *
+ * This provider manages:
+ * - Go board state and game rules
+ * - Move validation and execution
+ * - Board transformations (rotation/mirroring)
+ * - Synchronization with the game tree
+ * - Auto-play functionality for opponent moves
+ *
+ * The provider integrates with:
+ * - GameTreeContext: For SGF tree navigation
+ * - TransformContext: For board transformations
+ *
+ * Board transformations are applied to support:
+ * - Pattern recognition from different angles
+ * - Color inversion for playing as white
+ *
+ * @component
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} props.children - Child components
+ * @returns {JSX.Element} Provider component
+ */
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
   children
 }) => {
@@ -59,7 +106,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
   const [autoPlayOpponent, setAutoPlayOpponent] = useState(false);
   const [autoPlayDelay, setAutoPlayDelay] = useState(500);
 
+  // Get transformation settings
   const { transformation } = useTransform();
+
+  // Board state management
+  // - initialBoard: Starting position from SGF
+  // - originalBoard: Current position without transformations
+  // - board: Current position with transformations applied
   const [initialBoard, setInitialBoard] = useState(() =>
     Board.fromDimensions(boardSize)
   );
@@ -68,6 +121,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
     Board.fromDimensions(boardSize)
   );
 
+  // Access game tree navigation
   const { gameTree, currentNode, startingNode, addMove, setCurrentNode } =
     useGameTree();
 
@@ -79,11 +133,15 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
     [transformation.invertColors]
   );
 
+  // Update board when transformation changes
   useEffect(() => {
     setBoard(applyTransformation(originalBoard, transformation, boardSize));
   }, [transformation]);
 
-  // Initial setup effect
+  /**
+   * Initial board setup from SGF
+   * Sets up the starting position when a problem is loaded
+   */
   useEffect(() => {
     if (gameTree && !isInitialized) {
       debugLog('GameContext', 'Performing initial board setup', transformation);
@@ -98,7 +156,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [gameTree, isInitialized, transformation]);
 
-  // Sync board state with game tree
+  /**
+   * Update board state when navigating the game tree
+   * Synchronizes the board with the current node in the SGF tree
+   */
   useEffect(() => {
     if (gameTree && currentNode && isInitialized) {
       let newBoard = setUpBoard(startingNode, boardSize);
@@ -151,12 +212,25 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Check if a move is valid
   const isValidMove = useCallback(
-    (transformedVertex: Vertex): boolean => {
-      return !board.analyzeMove(currentPlayer, transformedVertex).pass;
+    (vertex: Vertex): boolean => {
+      return !board.analyzeMove(currentPlayer, vertex).pass;
     },
     [board, currentPlayer]
   );
 
+  /**
+   * Place a stone at the specified vertex
+   *
+   * This method:
+   * 1. Transforms the vertex to board coordinates
+   * 2. Validates the move
+   * 3. Updates the board state
+   * 4. Checks for correct/incorrect moves against the SGF tree
+   * 5. Triggers auto-play for opponent if enabled
+   *
+   * @param {Vertex} vertex - The intersection to place a stone
+   * @returns {Promise<boolean>} True if move was successful
+   */
   const placeStone = useCallback(
     async (transformedVertex: Vertex): Promise<boolean> => {
       // Convert the transformed vertex back to original coordinates
@@ -189,7 +263,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
       );
 
       // Handle auto-play
-      if (autoPlayOpponent) {
+      if (autoPlayOpponent && currentNode?.children?.length > 0) {
         await playOpponentMove();
       }
 

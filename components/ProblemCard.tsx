@@ -12,13 +12,32 @@ import { Problem } from '@/types/sgf';
 
 const windowWidth = Dimensions.get('window').width;
 const itemWidth = (windowWidth - 56) / 4;
+// Fallback image in case a problem has no image
 const defaultImageSource = require('@/assets/images/placeholder.png');
 
+/**
+ * Props for the ProblemCard component.
+ */
 interface ProblemCardProps {
+  /** A single problem item containing its image and ID. */
   problem: Problem;
+  /** Callback triggered when the card is pressed. */
   onPress: () => void;
 }
 
+/**
+ * A reusable card component that displays a problem image and ID.
+ *
+ * @component
+ * @param {ProblemCardProps} props - The props for the ProblemCard component.
+ * @returns {JSX.Element} The rendered ProblemCard component.
+ *
+ * @example
+ * <ProblemCard
+ *   problem={{ id: 0, image: require('./img.png') }}
+ *   onPress={() => console.log('Pressed')}
+ * />
+ */
 export const ProblemCard: React.FC<ProblemCardProps> = ({
   problem,
   onPress
